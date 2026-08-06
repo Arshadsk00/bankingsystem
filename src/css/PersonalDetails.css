@@ -1,0 +1,41 @@
+.form-container{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    border-top: 20px;
+
+}
+
+.form-group label{
+    font-weight:600;
+    margin-bottom:6px;
+    color:#333;
+}
+
+.form-group input,
+.form-group select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+    outline:none;
+    transition:.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+    border-color:#1565C0;
+    box-shadow:0 0 5px rgba(21,101,192,.3);
+}
+
+.error{
+    color:red;
+    font-size:13px;
+    margin-top:5px;
+}

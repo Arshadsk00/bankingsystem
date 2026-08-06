@@ -1,0 +1,57 @@
+.left-panel{
+    width:35%;
+    min-height:100vh;
+    background:linear-gradient(135deg,#0d47a1,#1565c0,#42a5f5);
+    color:white;
+
+    padding:60px 40px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.bank-logo{
+    font-size:65px;
+    margin-bottom:20px;
+}
+
+.left-panel h1{
+    font-size:42px;
+    margin-bottom:15px;
+    font-weight:700;
+}
+
+.left-panel h2{
+    font-size:30px;
+    margin-bottom:25px;
+    line-height:1.4;
+}
+
+.left-panel p{
+    font-size:18px;
+    line-height:30px;
+    color:#E3F2FD;
+    margin-bottom:40px;
+}
+
+.features{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.feature{
+    background:rgba(255,255,255,.12);
+    padding:16px;
+    border-radius:12px;
+    font-size:17px;
+    backdrop-filter:blur(8px);
+}
+div button{
+    margin-top:20px;    
+}
+div button:hover{
+    background-color: green;
+    transform: translatey(-4px);
+}

@@ -1,0 +1,140 @@
+.form-card{
+    background:#fff;
+    border-radius:18px;
+    padding:40px;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+    animation:fade .4s ease;
+}
+
+.form-card h2{
+    font-size:32px;
+    color:#1565C0;
+    margin-bottom:6px;
+    font-weight:700;
+}
+
+.subtitle{
+    color:#666;
+    margin-bottom:35px;
+    font-size:15px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:22px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    font-size:14px;
+    font-weight:600;
+    color:#333;
+    margin-bottom:8px;
+}
+
+.form-group input,
+.form-group select{
+    height:55px;
+    padding:0 18px;
+    border:1px solid #d8e2ef;
+    border-radius:12px;
+    font-size:15px;
+    background:#fafcff;
+    transition:.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+    outline:none;
+    border-color:#1565C0;
+    background:white;
+    box-shadow:0 0 0 4px rgba(21,101,192,.12);
+}
+
+.form-group select{
+    cursor:pointer;
+}
+
+.service-box{
+    margin-top:35px;
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    background:linear-gradient(135deg,#eef6ff,#f8fbff);
+    border:1px solid #d6e8ff;
+    padding:22px;
+    border-radius:15px;
+}
+
+.service-box input{
+    width:22px;
+    height:22px;
+    accent-color:#1565C0;
+    margin-top:3px;
+}
+
+.service-box h4{
+    color:#1565C0;
+    font-size:18px;
+    margin-bottom:6px;
+}
+
+.service-box p{
+    color:#555;
+    line-height:1.6;
+    font-size:14px;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media(max-width:900px){
+
+.form-grid{
+    grid-template-columns:1fr;
+}
+
+.form-card{
+    padding:30px;
+}
+
+}
+
+@media(max-width:600px){
+
+.form-card{
+    padding:22px;
+    border-radius:14px;
+}
+
+.form-card h2{
+    font-size:26px;
+}
+
+.subtitle{
+    margin-bottom:25px;
+}
+
+.form-group input,
+.form-group select{
+    height:50px;
+}
+
+.service-box{
+    flex-direction:column;
+}
+
+}

@@ -1,0 +1,245 @@
+/* Background */
+
+.container{
+    min-height:100vh;
+    background:#eef4fb;
+    padding:40px;
+}
+
+/* Form Card */
+
+.form-container,
+.account-form{
+    width:100%;
+    max-width:900px;
+    margin:40px auto;
+    background:#fff;
+    border-radius:18px;
+    padding:45px;
+    box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:28px;
+}
+
+/* Each Field */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+/* Labels */
+
+.form-group label,
+label{
+    font-size:15px;
+    font-weight:600;
+    color:#444;
+    margin-bottom:8px;
+}
+
+/* Inputs */
+
+.form-group input,
+.form-group select,
+input,
+select,
+textarea{
+
+    width:100%;
+    padding:14px 16px;
+
+    border:1px solid #d6dce5;
+    border-radius:10px;
+
+    font-size:15px;
+    outline:none;
+
+    transition:.3s;
+    background:white;
+
+}
+
+/* Focus */
+
+.form-group input:focus,
+.form-group select:focus,
+input:focus,
+select:focus,
+textarea:focus{
+
+    border:1px solid #1565C0;
+    box-shadow:0 0 0 4px rgba(21,101,192,.12);
+
+}
+
+/* Textarea */
+
+textarea{
+
+    resize:none;
+    min-height:120px;
+
+}
+
+/* Full Width */
+
+textarea,
+.services{
+    grid-column:1/3;
+}
+
+/* Error */
+
+.error{
+
+    color:red;
+    font-size:13px;
+    margin-top:5px;
+
+}
+
+/* Debit Card */
+
+.services{
+
+    margin-top:10px;
+
+}
+
+.service-card{
+
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:18px;
+
+    display:flex;
+    align-items:center;
+    gap:15px;
+
+    transition:.3s;
+    cursor:pointer;
+
+}
+
+.service-card:hover{
+
+    border-color:#1565C0;
+    background:#f6f9ff;
+
+}
+
+.service-card input{
+
+    width:20px;
+    height:20px;
+
+}
+
+.service-card h4{
+
+    color:#1565C0;
+    margin-bottom:3px;
+
+}
+
+.service-card p{
+
+    color:#666;
+    font-size:14px;
+
+}
+
+/* Buttons */
+
+.btn-group{
+
+    max-width:900px;
+    margin:30px auto;
+
+    display:flex;
+    justify-content:space-between;
+
+}
+
+.btn-group button,
+.container button{
+
+    background:#1565C0;
+    color:white;
+
+    border:none;
+    padding:14px 35px;
+
+    border-radius:10px;
+
+    font-size:16px;
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.btn-group button:hover,
+.container button:hover{
+
+    background:#0D47A1;
+    transform:translateY(-2px);
+
+}
+@media(max-width:768px){
+
+.form-container,
+.account-form{
+
+    grid-template-columns:1fr;
+    padding:25px;
+
+}
+
+textarea,
+.services{
+
+    grid-column:1;
+
+}
+
+.btn-group{
+
+    flex-direction:column;
+    gap:15px;
+
+}
+
+.btn-group button{
+
+    width:100%;
+
+}
+
+.container{
+
+    padding:20px;
+
+}
+
+}
+@media(min-width:769px) and (max-width:1024px){
+
+.form-container,
+.account-form{
+
+    grid-template-columns:1fr 1fr;
+    padding:35px;
+
+}
+
+.container{
+
+    padding:30px;
+
+}
+
+}

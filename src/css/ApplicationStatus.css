@@ -1,0 +1,347 @@
+/* ===========================
+   Background
+=========================== */
+
+.status-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px;
+    background:
+    linear-gradient(135deg,#0F4C81,#1565C0,#42A5F5);
+}
+
+
+/* ===========================
+   Main Card
+=========================== */
+
+.status-container{
+
+    width:100%;
+    max-width:700px;
+
+    background:rgba(255,255,255,.15);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,.25);
+
+    border-radius:25px;
+
+    padding:45px;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.25);
+
+    text-align:center;
+
+    animation:fadeIn .6s ease;
+}
+
+@keyframes fadeIn{
+
+from{
+opacity:0;
+transform:translateY(20px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+
+/* ===========================
+   Heading
+=========================== */
+
+.status-container h1{
+
+    color:white;
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.status-container p{
+
+    color:#eef6ff;
+    font-size:16px;
+    margin-bottom:25px;
+}
+
+
+/* ===========================
+   Search Box
+=========================== */
+
+.status-container input{
+
+    width:100%;
+    padding:16px;
+
+    border:none;
+    border-radius:12px;
+
+    outline:none;
+
+    font-size:16px;
+
+    background:rgba(255,255,255,.92);
+
+    margin-bottom:20px;
+
+    transition:.3s;
+}
+
+.status-container input:focus{
+
+    transform:scale(1.02);
+
+    box-shadow:
+    0 0 0 4px rgba(255,255,255,.25);
+
+}
+
+
+/* ===========================
+   Button
+=========================== */
+
+.status-container button{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:linear-gradient(
+    135deg,
+    #1976D2,
+    #42A5F5
+    );
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.status-container button:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 12px 30px rgba(25,118,210,.4);
+
+}
+
+
+/* ===========================
+   Status Card
+=========================== */
+
+.status-card{
+
+    margin-top:35px;
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    text-align:left;
+
+    box-shadow:
+    0 15px 30px rgba(0,0,0,.15);
+
+    animation:fadeIn .5s ease;
+}
+
+.status-card h2{
+
+    text-align:center;
+
+    color:#1565C0;
+
+    margin-bottom:20px;
+}
+
+.status-card p{
+
+    color:#444;
+
+    margin:14px 0;
+
+    font-size:16px;
+
+    display:flex;
+    justify-content:space-between;
+
+    border-bottom:1px solid #eee;
+
+    padding-bottom:10px;
+}
+
+.status-card b{
+
+    color:#0D47A1;
+}
+
+
+/* ===========================
+   Status Badge
+=========================== */
+
+.pending,
+.approved,
+.rejected{
+
+    width:220px;
+
+    margin:25px auto 10px;
+
+    padding:12px;
+
+    border-radius:30px;
+
+    text-align:center;
+
+    font-weight:bold;
+
+    font-size:18px;
+
+    letter-spacing:.5px;
+}
+
+.pending{
+
+    background:#FFF3CD;
+    color:#F57C00;
+}
+
+.approved{
+
+    background:#E8F5E9;
+    color:#2E7D32;
+}
+
+.rejected{
+
+    background:#FDECEC;
+    color:#C62828;
+}
+
+
+/* ===========================
+   Error
+=========================== */
+
+.error{
+
+    color:#ffebee;
+
+    background:#d32f2f;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-top:20px;
+
+    font-weight:600;
+}
+
+
+/* ===========================
+   View Button
+=========================== */
+
+.view-btn{
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    background:linear-gradient(
+    135deg,
+    #1565C0,
+    #42A5F5
+    );
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    transition:.3s;
+}
+
+.view-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 10px 25px rgba(21,101,192,.35);
+
+}
+
+
+/* ===========================
+   Mobile
+=========================== */
+
+@media(max-width:768px){
+
+.status-page{
+
+padding:20px;
+
+}
+
+.status-container{
+
+padding:30px 20px;
+
+}
+
+.status-container h1{
+
+font-size:28px;
+
+}
+
+.status-card{
+
+padding:20px;
+
+}
+
+.status-card p{
+
+display:block;
+
+}
+
+}

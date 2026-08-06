@@ -1,0 +1,326 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+.header{
+
+position:fixed;
+
+top:0;
+
+left:240px;
+
+width:calc(100% - 240px);
+
+height:80px;
+
+background:#fff;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 30px;
+
+box-shadow:0 2px 15px rgba(0,0,0,.08);
+
+border-bottom:1px solid #EEF2F7;
+
+z-index:900;
+
+}
+
+/* LEFT */
+
+.header-left{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+}
+
+.logo{
+
+width:52px;
+
+height:52px;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#1565C0,#0D47A1);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:24px;
+
+color:white;
+
+box-shadow:0 5px 15px rgba(21,101,192,.3);
+
+}
+
+.bank-name h2{
+
+font-size:24px;
+
+color:#0D47A1;
+
+}
+.bank-name p{
+font-size:13px;
+color:#777;
+margin-top:3px;
+}
+/* SEARCH */
+.search-box{
+    width:420px;
+    height:48px;
+    background:#f6f8fb;
+    border-radius:30px;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+    transition:.3s;
+}
+.search-box:hover{
+    box-shadow:0 0 10px rgba(0,0,0,.08);
+}
+.search-box input{
+    border:none;
+    background:none;
+    outline:none;
+    flex:1;
+    font-size:15px;
+}
+.search-icon{
+    color:#777;
+    margin-right:10px;
+}
+
+
+/* RIGHT */
+
+.header-right{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+}
+
+.date{
+
+font-size:15px;
+
+font-weight:600;
+
+color:#666;
+
+}
+
+/* ICONS */
+.icon-btn{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+
+    border:none;
+    background:#f5f8ff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    position:relative;
+    transition:.3s;
+}
+.icon-btn:hover{
+    background:#2563eb;
+    color:white;
+    transform:translateY(-2px);
+}
+
+.badge{
+
+position:absolute;
+
+top:6px;
+
+right:7px;
+
+background:#EF4444;
+
+color:white;
+
+font-size:10px;
+
+padding:2px 5px;
+
+border-radius:20px;
+
+}
+
+/* PROFILE */
+.profile{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-left:15px;
+}
+
+.profile img{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid white;
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+
+.profile h4{
+    margin:0;
+    font-size:15px;
+    font-weight:700;
+}
+
+.profile span{
+    font-size:12px;
+    color:#777;
+}
+
+
+/* LOGOUT */
+
+.logout{
+
+width:44px;
+
+height:44px;
+
+border:none;
+
+border-radius:10px;
+
+background:#1565C0;
+
+color:white;
+
+cursor:pointer;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:18px;
+
+transition:.3s;
+
+}
+
+.logout:hover{
+
+background:#0D47A1;
+
+}
+
+/* RESPONSIVE */
+
+@media(max-width:992px){
+
+.header{
+
+left:80px;
+
+width:calc(100% - 80px);
+
+}
+
+.bank-name p{
+
+display:none;
+
+}
+
+.search-box{
+
+width:250px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.header{
+
+left:0;
+
+width:100%;
+
+padding:0 15px;
+
+}
+
+.search-box{
+
+display:none;
+
+}
+
+.date{
+
+display:none;
+
+}
+
+.profile span{
+
+display:none;
+
+}
+
+.profile h4{
+
+display:none;
+
+}
+.profile p,
+.profile h4{
+
+display:none;
+
+}
+
+}
+
+
+.header-left h2,
+.header-left span{
+
+display:none;
+
+}
+
+.logo{
+
+width:42px;
+height:42px;
+font-size:22px;
+
+}
+

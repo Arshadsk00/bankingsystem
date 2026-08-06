@@ -1,0 +1,38 @@
+.main-content{
+    margin-left:240px;
+    min-height:100vh;
+    padding:20px;
+    background:#f4f7fb;
+}
+
+@media(max-width:768px){
+
+.main-content{
+    margin-left:70px;
+}
+
+}
+.page-content{
+    margin-left:240px;
+    padding:30px;
+    min-height:100vh;
+    transition:.3s;
+}
+
+@media(max-width:992px){
+
+.page-content{
+    margin-left:80px;
+}
+
+}
+
+@media(max-width:768px){
+
+.page-content{
+    margin-left:0;
+    padding:20px;
+    padding-top:70px;
+}
+
+}

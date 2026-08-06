@@ -1,0 +1,379 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+.sidebar{
+
+position:fixed;
+
+top:0;
+left:0;
+
+width:240px;
+
+height:100vh;
+background:linear-gradient(180deg,#0B4DB6,#1565C0);
+display:flex;
+flex-direction:column;
+box-shadow:4px 0 20px rgba(0,0,0,.12);
+
+z-index:1000;
+
+transition:.35s;
+
+overflow:hidden;
+
+}
+
+/* LOGO */
+
+.sidebar-top{
+
+padding:25px;
+
+border-bottom:1px solid rgba(255,255,255,.15);
+
+}
+.sidebar-logo{
+display:flex;
+
+align-items:center;
+
+gap:15px;
+}
+.logo-circle{
+
+width:55px;
+
+height:55px;
+
+border-radius:50%;
+
+background:white;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:28px;
+
+}
+
+.sidebar-logo h2{
+
+color:white;
+
+font-size:20px;
+
+}
+/* Contact */
+
+.contact-btn{
+    width:100%;
+    height:48px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:12px;
+
+    background:rgba(255,255,255,.10);
+
+    color:white;
+    font-size:15px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.35s;
+}
+
+.contact-btn svg{
+    font-size:18px;
+}
+
+.contact-btn:hover{
+
+    background:white;
+
+    color:#1565C0;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+
+}
+
+
+.sidebar-logo p{
+
+color:#D6E8FF;
+
+font-size:13px;
+
+margin-top:3px;
+
+}
+
+/* MENU */
+
+.sidebar-menu{
+
+padding:20px 12px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+flex:1;
+
+}
+
+.menu-item{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+padding:14px 18px;
+
+border-radius:12px;
+
+text-decoration:none;
+
+color:white;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+.menu-item svg{
+
+font-size:20px;
+
+}
+
+.menu-item:hover{
+
+background:rgba(255,255,255,.15);
+
+transform:translateX(5px);
+
+}
+
+.menu-item.active{
+
+background:white;
+
+color:#1565C0;
+
+font-weight:600;
+
+box-shadow:0 5px 15px rgba(0,0,0,.12);
+
+}
+
+/* USER */
+.sidebar-bottom{
+    margin-top:auto;
+    padding:18px;
+    border-top:1px solid rgba(255,255,255,.15);
+
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+.user-card{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+margin-bottom:18px;
+padding:18px;
+
+}
+
+.user-card img{
+
+width:58px;
+
+height:58px;
+
+border-radius:50%;
+
+border:2px solid white;
+
+}
+
+.user-card h4{
+
+color:white;
+
+font-size:15px;
+
+}
+
+.user-card p{
+
+color:#D8E6FF;
+
+font-size:12px;
+
+}
+
+/* Logout */
+
+
+.logout-btn{
+
+    width:100%;
+    height:48px;
+    
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+
+    border:none;
+    border-radius:12px;
+
+    background:#ff5252;
+
+    color:white;
+
+    font-size:15px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+}
+
+.logout-btn svg{
+    font-size:18px;
+}
+
+.logout-btn:hover{
+
+    background:#e53935;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 25px rgba(229,57,53,.35);
+}
+/* MOBILE BUTTON */
+.menu-toggle{
+display:none;
+}
+
+.overlay{
+display:none;
+}
+
+@media(max-width:992px){
+
+.sidebar{
+width:78px;
+}
+
+.sidebar-logo h2,
+.sidebar-logo p,
+.menu-item span,
+.user-card,
+.logout-btn span{
+
+display:none;
+}
+.logo-circle{
+margin:auto;
+}
+
+.menu-item{
+justify-content:center;
+padding:16px;
+}
+
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+.menu-toggle{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:fixed;
+    top:12px;
+    left:12px;
+
+    width:42px;
+    height:42px;
+
+    border:none;
+    border-radius:10px;
+
+    background:#1565C0;
+    color:#fff;
+
+    font-size:22px;
+    cursor:pointer;
+
+    z-index:2000;
+}
+
+}
+
+@media (max-width:768px){
+
+.sidebar{
+
+left:-240px;
+
+width:240px;
+
+height:100vh;
+
+transition:.35s;
+
+}
+
+.sidebar.active{
+
+left:0;
+
+}
+
+}
+.overlay{
+display:block;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+z-index:999;
+}
+@media(max-width:768px){
+.header{
+left:0;
+width:100%;
+height:70px;
+padding:0 15px 0 65px;
+}
+}
