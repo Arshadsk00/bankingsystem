@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import {
   FiDollarSign,
   FiFileText,
@@ -20,13 +22,27 @@ function Deposit() {
     pin: ""
   });
 
+  // =========================
+  // LOAD LOGGED-IN USER
+  // =========================
+
   useEffect(() => {
 
     const loggedInUser =
-      JSON.parse(localStorage.getItem("loggedInUser"));
+      JSON.parse(
+        localStorage.getItem("loggedInUser")
+      );
 
-    if (!loggedInUser) {
+    const token =
+      localStorage.getItem("token");
+
+    if (!loggedInUser || !token) {
+
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("token");
+
       navigate("/login");
+
       return;
     }
 
@@ -34,9 +50,27 @@ function Deposit() {
 
   }, [navigate]);
 
-  if (!user) return null;
 
-  const balance = Number(user.deposit || 0);
+  // =========================
+  // LOADING
+  // =========================
+
+  if (!user) {
+    return null;
+  }
+
+
+  // =========================
+  // CURRENT BALANCE
+  // =========================
+
+  const balance =
+    Number(user.deposit || 0);
+
+
+  // =========================
+  // HANDLE INPUT
+  // =========================
 
   const handleChange = (e) => {
 
@@ -47,115 +81,271 @@ function Deposit() {
 
   };
 
-  const handleDeposit = (e) => {
+
+  // =========================
+  // DEPOSIT
+  // =========================
+
+  const handleDeposit = async (e) => {
 
     e.preventDefault();
 
+
+    // =========================
+    // PIN VALIDATION
+    // =========================
+
     if (form.pin !== user.pin) {
+
       alert("Invalid PIN");
+
       return;
     }
 
-    if (Number(form.amount) <= 0) {
-      alert("Enter a valid amount");
+
+    // =========================
+    // AMOUNT VALIDATION
+    // =========================
+
+    const depositAmount =
+      Number(form.amount);
+
+
+    if (
+      !form.amount ||
+      depositAmount <= 0
+    ) {
+
+      alert(
+        "Enter a valid deposit amount."
+      );
+
       return;
     }
 
-    const depositAmount = Number(form.amount);
 
-    const newBalance = balance + depositAmount;
+    // =========================
+    // JWT
+    // =========================
 
-    // Update applications
+    const token =
+      localStorage.getItem("token");
 
-    const applications =
-      JSON.parse(localStorage.getItem("applications")) || [];
 
-    const updatedApplications =
-      applications.map((app) => {
+    if (!token) {
 
-        if (app.mobile === user.mobile) {
+      alert(
+        "Your session has expired. Please login again."
+      );
 
-          return {
+      navigate("/login");
 
-            ...app,
+      return;
+    }
 
-            deposit: newBalance
 
-          };
+    try {
 
-        }
+      // =========================
+      // CALL SPRING BOOT
+      // =========================
 
-        return app;
+      const response =
+        await axios.post(
+
+          "http://localhost:8082/transactions/deposit",
+
+          {
+            accountNumber:
+              user.accountNumber,
+
+            amount:
+              depositAmount,
+
+            remarks:
+              form.remarks.trim() ||
+              "Cash Deposit"
+          },
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "Content-Type":
+                "application/json"
+            }
+          }
+
+        );
+
+
+      console.log(
+        "Deposit Response:",
+        response.data
+      );
+
+
+      // =========================
+      // UPDATE LOCAL USER
+      // =========================
+      //
+      // Backend has already updated
+      // the database balance.
+      //
+      // This only updates React UI
+      // immediately.
+
+      const updatedUser = {
+
+        ...user,
+
+        deposit:
+          balance + depositAmount
+
+      };
+
+
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(updatedUser)
+      );
+
+
+      setUser(updatedUser);
+
+
+      // =========================
+      // CLEAR FORM
+      // =========================
+
+      setForm({
+
+        amount: "",
+        remarks: "",
+        pin: ""
 
       });
 
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updatedApplications)
-    );
 
-    // Update logged in user
+      // =========================
+      // SUCCESS
+      // =========================
 
-    const updatedUser = {
+      alert(
+        "Deposit Successful!"
+      );
 
-      ...user,
 
-      deposit: newBalance
+      // Go to dashboard
 
-    };
+      navigate("/dashboard");
 
-    localStorage.setItem(
-      "loggedInUser",
-      JSON.stringify(updatedUser)
-    );
 
-    // Save transaction
+    } catch (error) {
 
-    const transactions =
-      JSON.parse(localStorage.getItem("transactions")) || [];
+      console.error(
+        "Deposit Error:",
+        error
+      );
 
-    transactions.unshift({
 
-      id: Date.now(),
+      // =========================
+      // BACKEND ERROR
+      // =========================
 
-      mobile: user.mobile,
+      if (error.response) {
 
-      type: "Credit",
+        console.log(
+          "Backend Response:",
+          error.response.data
+        );
 
-      title: "Cash Deposit",
 
-      amount: depositAmount,
+        if (
+          error.response.status === 401
+        ) {
 
-      remarks: form.remarks || "Cash Deposit",
+          localStorage.removeItem(
+            "token"
+          );
 
-      date: new Date().toLocaleString("en-IN"),
+          localStorage.removeItem(
+            "loggedInUser"
+          );
 
-      status: "Success"
+          alert(
+            "Your session has expired. Please login again."
+          );
 
-    });
+          navigate("/login");
 
-    localStorage.setItem(
-      "transactions",
-      JSON.stringify(transactions)
-    );
+          return;
+        }
 
-    alert("Deposit Successful!");
 
-    navigate("/dashboard");
+        const backendMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          "Deposit failed.";
+
+
+        alert(
+          backendMessage
+        );
+
+      }
+
+      else if (error.request) {
+
+        alert(
+          "Backend server is not responding. Make sure Spring Boot is running on port 8082."
+        );
+
+      }
+
+      else {
+
+        alert(
+          "Something went wrong while depositing money."
+        );
+
+      }
+
+    }
 
   };
+
+
+  // =========================
+  // UI
+  // =========================
 
   return (
 
     <div className="deposit-page">
 
+
+      {/* =========================
+          BALANCE
+      ========================= */}
+
       <div className="deposit-balance">
 
-        <h3>Available Balance</h3>
+        <h3>
+          Available Balance
+        </h3>
 
-        <h1>₹{balance.toLocaleString()}</h1>
+        <h1>
+          ₹{balance.toLocaleString("en-IN")}
+        </h1>
 
       </div>
+
+
+      {/* =========================
+          DEPOSIT FORM
+      ========================= */}
 
       <form
         className="deposit-card"
@@ -168,6 +358,9 @@ function Deposit() {
 
         </h2>
 
+
+        {/* AMOUNT */}
+
         <div className="deposit-input">
 
           <FiDollarSign />
@@ -178,10 +371,14 @@ function Deposit() {
             placeholder="Deposit Amount"
             value={form.amount}
             onChange={handleChange}
+            min="1"
             required
           />
 
         </div>
+
+
+        {/* REMARKS */}
 
         <div className="deposit-input">
 
@@ -196,6 +393,9 @@ function Deposit() {
           />
 
         </div>
+
+
+        {/* PIN */}
 
         <div className="deposit-input">
 
@@ -212,6 +412,9 @@ function Deposit() {
           />
 
         </div>
+
+
+        {/* BUTTON */}
 
         <button
           className="deposit-btn"

@@ -95,11 +95,24 @@ useEffect(() => {
         </button>
 
         <div className="profile">
+         
+<div className="avatar-circle">
+{
+user?.fullName
+? user.fullName
+    .split(" ")
+    .map(word => word[0])
+    .join("")
+    .substring(0,2)
+    .toUpperCase()
+: "U"
+}
+</div>
 
-          <img
+          {/* <img
             src="https://i.pravatar.cc/150?img=12"
             alt=""
-          />
+          /> */}
 
           <div>
             <h4>{user?.fullName || "Customer"}</h4>

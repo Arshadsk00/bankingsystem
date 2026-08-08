@@ -131,6 +131,26 @@ font-weight:600;
 color:#666;
 
 }
+.avatar-circle{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:#fff;
+    font-size:22px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 8px 18px rgba(37,99,235,.25);
+    flex-shrink:0;
+    text-transform:uppercase;
+    transition:.3s;
+}
+
+.avatar-circle:hover{
+    transform:scale(1.08);
+}
 
 /* ICONS */
 .icon-btn{

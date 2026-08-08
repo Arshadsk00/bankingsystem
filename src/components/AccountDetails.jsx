@@ -13,7 +13,7 @@ function AccountDetails({ formData, setFormData }) {
       <p className="subtitle">
         Configure your new bank account.
       </p>
-
+ 
       <div className="form-grid">
 
         <div className="form-group">

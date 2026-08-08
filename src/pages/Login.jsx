@@ -1,217 +1,392 @@
-import { useState ,useEffect} from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RecaptchaVerifier } from "firebase/auth";
-import { auth } from "../firebase";
 import "../css/Login.css";
 
-import { signInWithPhoneNumber } from "firebase/auth";
-
-
-
 function Login() {
+
   const navigate = useNavigate();
 
-  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+
   const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-   useEffect(() => {
+  // =========================
+  // SEND OTP
+  // =========================
 
-    if (!window.recaptchaVerifier) {
-
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "normal",
-        }
-      );
-
-    }
-
-  }, []);
-
-
-    const sendOtp =async () => {
-
-  setError("");
-
-  if (mobile.length !== 10) {
-    setError("Enter a valid mobile number");
-    return;
-  }
-const response = await fetch(
-  `http://localhost:8082/users/mobile/${mobile}`
-);
-
-if (!response.ok) {
-  setError("User not found");
-  return;
-}
-
-const account = await response.json();
-
-if (account.status !== "Approved") {
-  setError("Your account is not approved yet.");
-  return;
-}
- 
-try {
-
-      const appVerifier = window.recaptchaVerifier;
-
-      const confirmationResult =
-        await signInWithPhoneNumber(
-          auth,
-          "+91" + mobile,
-          appVerifier
-        );
-
-      window.confirmationResult = confirmationResult;
-
-      setShowOtp(true);
-
-      alert("OTP Sent Successfully");
-
-    } catch (err) {
-
-      console.log(err);
-
-      setError(err.message);
-
-    }
-
-  };
-
-   const verifyOtp = async () => {
+  const sendOtp = async () => {
 
     setError("");
 
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+
+    setLoading(true);
+
     try {
 
-      await window.confirmationResult.confirm(otp);
-const response = await fetch(
-  `http://localhost:8082/users/mobile/${mobile}`
-);
+      const response = await fetch(
+        "http://localhost:8082/auth/send-otp",
+        {
+          method: "POST",
 
-const account = await response.json();
+          headers: {
+            "Content-Type": "application/json"
+          },
 
+          body: JSON.stringify({
+            email: email.trim()
+          })
+        }
+      );
 
- 
+      const data = await response.json();
 
-  localStorage.setItem(
-    "loggedInUser",
-    JSON.stringify(account)
-  );
+      if (!response.ok) {
 
-  navigate("/dashboard");
- } catch (err) {
+        setError(
+          data.message || "Failed to send OTP"
+        );
 
-      console.log(err);
+        return;
+      }
 
-      setError("Invalid OTP");
+      if (
+        data.message !==
+        "OTP sent successfully"
+      ) {
+
+        setError(
+          data.message || "Failed to send OTP"
+        );
+
+        return;
+      }
+
+      setShowOtp(true);
+
+      alert(
+        "OTP sent successfully to your email"
+      );
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        "Unable to connect to server. Please make sure Spring Boot is running."
+      );
+
+    } finally {
+
+      setLoading(false);
 
     }
+
   };
 
- 
-   return (
+
+  // =========================
+  // VERIFY OTP + JWT LOGIN
+  // =========================
+
+  const verifyOtp = async () => {
+
+    setError("");
+
+    if (!otp || otp.length !== 6) {
+
+      setError(
+        "Enter the 6 digit OTP"
+      );
+
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+
+      const response = await fetch(
+        "http://localhost:8082/auth/verify-otp",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            email: email.trim(),
+            otp: otp
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(
+        "Login Response:",
+        data
+      );
+
+
+      // =========================
+      // CHECK HTTP RESPONSE
+      // =========================
+
+      if (!response.ok) {
+
+        setError(
+          data.message ||
+          "OTP verification failed"
+        );
+
+        return;
+      }
+
+
+      // =========================
+      // CHECK LOGIN SUCCESS
+      // =========================
+
+      if (!data.success) {
+
+        setError(
+          data.message ||
+          "Invalid OTP"
+        );
+
+        return;
+      }
+
+
+      // =========================
+      // CHECK JWT
+      // =========================
+
+      if (!data.token) {
+
+        setError(
+          "Login successful, but JWT token was not received."
+        );
+
+        return;
+      }
+
+
+      // =========================
+      // SAVE JWT TOKEN
+      // =========================
+
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
+
+      // =========================
+      // SAVE LOGGED-IN USER
+      // =========================
+
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(data.user)
+      );
+      localStorage.setItem(
+  "token",
+  data.token
+);
+
+
+      console.log(
+        "JWT saved successfully"
+      );
+
+
+      alert(
+        "Login successful!"
+      );
+
+
+      // =========================
+      // GO TO DASHBOARD
+      // =========================
+
+      navigate("/dashboard");
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        "Unable to connect to server."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  // =========================
+  // UI
+  // =========================
+
+  return (
+
     <div className="login-page">
 
       <div className="login-card">
+
+        {/* LOGO */}
 
         <div className="login-logo">
           🏦
         </div>
 
-        <h1>SAFE BANK</h1>
+
+        <h1>
+          SAFE BANK
+        </h1>
+
 
         <p className="login-subtitle">
           Existing Account Login
         </p>
 
-        <form onSubmit={(e)=>e.preventDefault()}>
 
-          <label>Mobile Number</label>
+        <form
+          onSubmit={(e) =>
+            e.preventDefault()
+          }
+        >
+
+          {/* EMAIL */}
+
+          <label>
+            Email Address
+          </label>
 
           <input
-            type="tel"
-            placeholder="Enter 10 digit mobile number"
-            value={mobile}
-            maxLength={10}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "");
-              setMobile(value);
-            }}
+            type="email"
+            placeholder="Enter your registered email"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            disabled={showOtp}
             required
           />
-          <div id="recaptcha-container"></div>
-          {showOtp && (
-  <>
-    <label>Enter OTP</label>
 
-    <input
-      type="text"
-      placeholder="Enter 6 digit OTP"
-      value={otp}
-      maxLength={6}
-      onChange={(e) => {
-        const value = e.target.value.replace(/\D/g, "");
-        setOtp(value);
-      }}
-      required
-    />
-  </>
-)}
-      {error && (
+
+          {/* OTP */}
+
+          {showOtp && (
+
+            <>
+
+              <label>
+                Enter OTP
+              </label>
+
+              <input
+                type="text"
+                placeholder="Enter 6 digit OTP"
+                value={otp}
+                maxLength={6}
+                onChange={(e) => {
+
+                  const value =
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    );
+
+                  setOtp(value);
+
+                }}
+                required
+              />
+
+            </>
+
+          )}
+
+
+          {/* ERROR */}
+
+          {error && (
+
             <p className="login-error">
               {error}
             </p>
+
           )}
 
-            {!showOtp ? (
-  <button
-    type="button"
-    className="login-btn"
-    onClick={sendOtp}
-  >
-    Send OTP
-  </button>
-) : (
-  <button
-    type="button"
-    className="login-btn"
-    onClick={verifyOtp}
-  >
-    Verify OTP & Login
-  </button>
-)}
-          
+
+          {/* BUTTON */}
+
+          {!showOtp ? (
+
+            <button
+              type="button"
+              className="login-btn"
+              onClick={sendOtp}
+              disabled={loading}
+            >
+
+              {loading
+                ? "Sending OTP..."
+                : "Send OTP"}
+
+            </button>
+
+          ) : (
+
+            <button
+              type="button"
+              className="login-btn"
+              onClick={verifyOtp}
+              disabled={loading}
+            >
+
+              {loading
+                ? "Verifying..."
+                : "Verify OTP"}
+
+            </button>
+
+          )}
+
         </form>
+
+
+        {/* BACK */}
 
         <button
           className="back-login"
-          onClick={() => navigate("/")}
+          onClick={() =>
+            navigate("/")
+          }
         >
           ← Back to Home
         </button>
 
-<div className="bank-footer">
-
-  <p>🔒 RBI Compliant Secure Banking</p>
-
-  <p>
-    Your data is protected using
-    <br />
-    256-bit Bank Level Encryption
-  </p>
-
-</div>
       </div>
 
     </div>
+
   );
+
 }
 
 export default Login;

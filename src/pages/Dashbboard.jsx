@@ -1,257 +1,729 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import "../css/Dashboard.css";
-import { FiEye, FiEyeOff } from "react-icons/fi";
-import { FiBell } from "react-icons/fi";
+
+import {
+  FiEye,
+  FiEyeOff,
+  FiBell
+} from "react-icons/fi";
 
 function Dashboard() {
 
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-const [showBalance,setShowBalance]=useState(true);
-const [transactions, setTransactions] = useState([]);
-  useEffect(() => {
-    const loggedInUser =
-      JSON.parse(localStorage.getItem("loggedInUser"));
 
-    if (!loggedInUser) {
+  const [user, setUser] = useState(null);
+  const [showBalance, setShowBalance] = useState(true);
+
+  const [transactions, setTransactions] = useState([]);
+
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+
+
+  // =====================================================
+  // LOAD USER + TRANSACTIONS
+  // =====================================================
+
+  useEffect(() => {
+
+    const loggedInUser =
+      JSON.parse(
+        localStorage.getItem("loggedInUser")
+      );
+
+    const token =
+      localStorage.getItem("token");
+
+
+    // =====================================================
+    // CHECK LOGIN
+    // =====================================================
+
+    if (!loggedInUser || !token) {
+
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("token");
+
       navigate("/login");
+
       return;
     }
-    setUser(loggedInUser);
 
-  const allTransactions =
-    JSON.parse(localStorage.getItem("transactions")) || [];
 
-  const userTransactions =
-    allTransactions.filter(
-      (item) => item.mobile === loggedInUser.mobile
+    // =====================================================
+    // FETCH LATEST USER DATA
+    // =====================================================
+
+    const fetchUser = async () => {
+
+      try {
+
+        const response = await fetch(
+          `http://localhost:8082/users/${loggedInUser.id}`,
+          {
+            method: "GET",
+
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+
+        // JWT expired / invalid
+
+        if (response.status === 401) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("loggedInUser");
+
+          alert(
+            "Your session has expired. Please login again."
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Failed to fetch user"
+          );
+
+        }
+
+
+        const latestUser =
+          await response.json();
+
+
+        // Update React
+
+        setUser(latestUser);
+
+
+        // Update localStorage
+
+        localStorage.setItem(
+          "loggedInUser",
+          JSON.stringify(latestUser)
+        );
+
+
+        // =================================================
+        // FETCH TRANSACTIONS
+        // =================================================
+
+        await fetchTransactions(
+          latestUser,
+          token
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "User loading error:",
+          error
+        );
+
+
+        // Fallback
+
+        setUser(loggedInUser);
+
+
+        // Still try transactions
+
+        fetchTransactions(
+          loggedInUser,
+          token
+        );
+
+
+      } finally {
+
+        setLoadingUser(false);
+
+      }
+
+    };
+
+
+    // =====================================================
+    // FETCH TRANSACTIONS
+    // =====================================================
+
+    const fetchTransactions = async (
+      currentUser,
+      jwtToken
+    ) => {
+
+      try {
+
+        const response = await fetch(
+          "http://localhost:8082/transactions",
+          {
+            method: "GET",
+
+            headers: {
+              "Authorization": `Bearer ${jwtToken}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+
+        // JWT expired
+
+        if (response.status === 401) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("loggedInUser");
+
+          alert(
+            "Your session has expired. Please login again."
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Failed to fetch transactions"
+          );
+
+        }
+
+
+        const allTransactions =
+          await response.json();
+
+
+        // =================================================
+        // FILTER CURRENT USER
+        // =================================================
+
+        const userTransactions =
+          allTransactions.filter(
+            (item) =>
+              item.senderAccount ===
+                currentUser.accountNumber ||
+
+              item.receiverAccount ===
+                currentUser.accountNumber
+          );
+
+
+        // =================================================
+        // LATEST FIRST
+        // =================================================
+
+        userTransactions.sort(
+          (a, b) =>
+            new Date(b.date) -
+            new Date(a.date)
+        );
+
+
+        // =================================================
+        // SHOW LATEST 5
+        // =================================================
+
+        setTransactions(
+          userTransactions.slice(0, 5)
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Transaction loading error:",
+          error
+        );
+
+        setTransactions([]);
+
+      } finally {
+
+        setLoadingTransactions(false);
+
+      }
+
+    };
+
+
+    fetchUser();
+
+  }, [navigate]);
+
+
+  // =====================================================
+  // LOADING USER
+  // =====================================================
+
+  if (loadingUser) {
+
+    return (
+
+      <div className="dashboard-loading">
+
+        Loading Dashboard...
+
+      </div>
+
     );
 
-  setTransactions(userTransactions);
+  }
 
-}, [navigate]);
 
-   if (!user) {
+  if (!user) {
+
+    return null;
+
+  }
+
+
+  // =====================================================
+  // BALANCE
+  // =====================================================
+
+  const balance =
+    Number(user.deposit || 0);
+
+
+  // =====================================================
+  // DASHBOARD UI
+  // =====================================================
+
   return (
-    <div className="dashboard-loading">
-      Loading...
-    </div>
-  );
-}
 
-  const balance = Number(user.deposit || 0);
-
-  return (
     <div className="dashboard-page">
 
-      {/* Header */}
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
       <div className="dashboard-header">
 
         <div>
-          <p className="greeting">Good Morning,</p>
-          <h2>{user.fullName} 👋 </h2>
+
+          <p className="greeting">
+            Good Morning,
+          </p>
+
+          <h2>
+            {user.fullName} 👋
+          </h2>
+
         </div>
 
-        <button className="notification-btn">
-          🔔
+
+        <button
+          className="notification-btn"
+        >
+
+          <FiBell />
+
         </button>
 
       </div>
 
 
-      {/* Balance Card */}
+      {/* =================================================
+          BALANCE CARD
+      ================================================= */}
 
       <div className="balance-card">
 
-    <div className="balance-header">
+        <div className="balance-header">
 
-        <div>
+          <div>
 
-            <p>Available Balance</p>
+            <p>
+              Available Balance
+            </p>
 
             <h1>
-                {showBalance
-                ? `₹${balance.toLocaleString()}`
-                : "₹ ••••••"}
+
+              {showBalance
+
+                ? `₹${balance.toLocaleString("en-IN")}`
+
+                : "₹ ••••••"
+
+              }
+
             </h1>
 
+          </div>
+
+
+          <button
+            className="eye-btn"
+            onClick={() =>
+              setShowBalance(
+                !showBalance
+              )
+            }
+          >
+
+            {showBalance
+
+              ? <FiEye />
+
+              : <FiEyeOff />
+
+            }
+
+          </button>
+
         </div>
 
-        <button
-        className="eye-btn"
-        onClick={()=>setShowBalance(!showBalance)}
-        >
-            {showBalance ? <FiEye/> : <FiEyeOff/>}
-        </button>
 
-    </div>
+        {/* =================================================
+            ACCOUNT DETAILS
+        ================================================= */}
 
-    <div className="balance-footer">
+        <div className="balance-footer">
 
-        <div>
 
-            <span>Account</span>
+          <div>
 
-            <h3>{user.accountType}</h3>
-
-        </div>
-
-        <div>
-
-            <span>Account Number</span>
+            <span>
+              Account
+            </span>
 
             <h3>
-                XXXX XXXX {String(user.mobile).slice(-4)}
+              {user.accountType}
             </h3>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Account Number
+            </span>
+
+            <h3>
+
+              {user.accountNumber
+
+                ? `XXXX XXXX ${String(
+                    user.accountNumber
+                  ).slice(-4)}`
+
+                : "XXXX XXXX"
+
+              }
+
+            </h3>
+
+          </div>
+
 
         </div>
 
-    </div>
-
-</div>
+      </div>
 
 
-      {/* Quick Actions */}
+      {/* =================================================
+          QUICK ACTIONS
+      ================================================= */}
 
       <section className="dashboard-section">
 
         <div className="section-title">
 
-          <h2>Quick Actions</h2>
+          <h2>
+            Quick Actions
+          </h2>
 
         </div>
 
+
         <div className="quick-actions">
 
-          <button onClick={() => navigate("/send-money")}>
-            <span>💸</span>
-            <p>Send Money</p>
+
+          {/* SEND MONEY */}
+
+          <button
+            onClick={() =>
+              navigate("/send-money")
+            }
+          >
+
+            <span>
+              💸
+            </span>
+
+            <p>
+              Send Money
+            </p>
+
           </button>
 
-          <button onClick={() => navigate("/deposit")}>
-            <span>💰</span>
-            <p>Deposit</p>
+
+          {/* DEPOSIT */}
+
+          <button
+            onClick={() =>
+              navigate("/deposit")
+            }
+          >
+
+            <span>
+              💰
+            </span>
+
+            <p>
+              Deposit
+            </p>
+
           </button>
 
-          <button onClick={() => navigate("/transactions")}>
-            <span>📄</span>
-            <p>Transactions</p>
+
+          {/* TRANSACTIONS */}
+
+          <button
+            onClick={() =>
+              navigate("/transactions")
+            }
+          >
+
+            <span>
+              📄
+            </span>
+
+            <p>
+              Transactions
+            </p>
+
           </button>
 
-          <button onClick={() => navigate("/profile")}>
-            <span>👤</span>
-            <p>Profile</p>
+
+          {/* PROFILE */}
+
+          <button
+            onClick={() =>
+              navigate("/profile")
+            }
+          >
+
+            <span>
+              👤
+            </span>
+
+            <p>
+              Profile
+            </p>
+
           </button>
+
 
         </div>
 
       </section>
 
 
-      {/* Recent Transactions */}
-      <section className="dashboard-section">
+      {/* =================================================
+          RECENT TRANSACTIONS
+      ================================================= */}
 
-  <div className="section-title">
+      <section className="dashboard-section recent-section">
 
-    <h2>Recent Transactions</h2>
 
-    <button
-      onClick={() => navigate("/transactions")}
-    >
-      View All
-    </button>
+        <div className="section-title">
 
-  </div>
+          <h2>
+            Recent Transactions
+          </h2>
 
-  <div className="transactions">
 
-    {transactions.length === 0 ? (
-
-      <div className="transaction">
-
-        <div className="transaction-details">
-
-          <h3>No Recent Transactions</h3>
-
-          <p>You haven't made any transactions yet.</p>
-
-        </div>
-
-      </div>
-
-    ) : (
-
-      transactions.slice(0,5).map((item) => (
-
-        <div
-          className="transaction"
-          key={item.id}
-        >
-
-          <div
-            className={`transaction-icon ${
-              item.type === "Credit"
-                ? "credit"
-                : "debit"
-            }`}
-          >
-
-            {item.type === "Credit" ? "↓" : "↑"}
-
-          </div>
-
-          <div className="transaction-details">
-
-            <h3>{item.title}</h3>
-
-            <p>
-
-              {item.type === "Debit"
-
-                ? `To ${item.receiver}`
-
-                : item.remarks}
-
-            </p>
-
-            <small>{item.date}</small>
-
-          </div>
-
-          <strong
-            className={
-              item.type === "Credit"
-
-                ? "credit-text"
-
-                : "debit-text"
+          <button
+            onClick={() =>
+              navigate("/transactions")
             }
           >
 
-            {item.type === "Credit"
+            View All
 
-              ? "+"
-
-              : "-"}
-
-            ₹{Number(item.amount).toLocaleString()}
-
-          </strong>
+          </button>
 
         </div>
 
-      ))
 
-    )}
+        {/* LOADING */}
 
-  </div>
+        {loadingTransactions ? (
 
-</section>
+          <div className="transaction">
+
+            <div className="transaction-details">
+
+              <h3>
+                Loading Transactions...
+              </h3>
+
+            </div>
+
+          </div>
+
+        ) : transactions.length === 0 ? (
+
+          /* NO TRANSACTIONS */
+
+          <div className="transaction">
+
+            <div className="transaction-details">
+
+              <h3>
+                No Recent Transactions
+              </h3>
+
+              <p>
+                You haven't made any
+                transactions yet.
+              </p>
+
+            </div>
+
+          </div>
+
+        ) : (
+
+          /* TRANSACTIONS */
+
+          transactions.map((item) => {
+
+            const isCredit =
+              item.receiverAccount ===
+              user.accountNumber;
+
+
+            return (
+
+              <div
+                className="transaction"
+                key={item.id}
+              >
+
+
+                {/* ICON */}
+
+                <div
+                  className={
+                    `transaction-icon ${
+                      isCredit
+                        ? "credit"
+                        : "debit"
+                    }`
+                  }
+                >
+
+                  {isCredit
+                    ? "↓"
+                    : "↑"}
+
+                </div>
+
+
+                {/* DETAILS */}
+
+                <div className="transaction-details">
+
+                  <h3>
+
+                    {isCredit
+                      ? "Money Received"
+                      : "Money Sent"}
+
+                  </h3>
+
+
+                  <p>
+
+                    {isCredit
+
+                      ? `From ${item.senderAccount}`
+
+                      : `To ${item.receiverAccount}`
+
+                    }
+
+                  </p>
+
+
+                  {item.remarks && (
+
+                    <p>
+                      {item.remarks}
+                    </p>
+
+                  )}
+
+
+                  <small>
+
+                    {new Date(
+                      item.date
+                    ).toLocaleString("en-IN")}
+
+                  </small>
+
+                </div>
+
+
+                {/* AMOUNT */}
+
+                <strong
+                  className={
+                    isCredit
+                      ? "credit-text"
+                      : "debit-text"
+                  }
+                >
+
+                  {isCredit
+                    ? "+"
+                    : "-"}
+
+                  ₹
+                  {Number(
+                    item.amount
+                  ).toLocaleString("en-IN")}
+
+                </strong>
+
+
+              </div>
+
+            );
+
+          })
+
+        )}
+
+      </section>
+
 
     </div>
+
   );
+
 }
 
 export default Dashboard;

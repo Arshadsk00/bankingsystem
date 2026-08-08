@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import {
   FiSend,
   FiUser,
@@ -15,6 +17,7 @@ function SendMoney() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -26,23 +29,157 @@ function SendMoney() {
     pin: ""
   });
 
+
+  // =====================================================
+  // LOAD USER FROM BACKEND
+  // =====================================================
+
   useEffect(() => {
 
     const loggedInUser =
-      JSON.parse(localStorage.getItem("loggedInUser"));
+      JSON.parse(
+        localStorage.getItem("loggedInUser")
+      );
 
+    const token =
+      localStorage.getItem("token");
+
+
+    // No logged-in user
     if (!loggedInUser) {
       navigate("/login");
       return;
     }
 
-    setUser(loggedInUser);
+
+    // No JWT
+    if (!token) {
+      localStorage.removeItem("loggedInUser");
+      navigate("/login");
+      return;
+    }
+
+
+    const fetchLatestUser = async () => {
+
+      try {
+              const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+        // IMPORTANT:
+        // Use loggedInUser.id here.
+        // NOT user.id because user is initially null.
+
+        const response = await axios.get(
+          `http://localhost:8082/users/${loggedInUser.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+
+        if (response.data) {
+
+          setUser(response.data);
+
+
+          // Keep localStorage updated
+
+          localStorage.setItem(
+            "loggedInUser",
+            JSON.stringify(response.data)
+          );
+
+        } else {
+
+          setUser(loggedInUser);
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "User loading error:",
+          error
+        );
+
+
+        // If JWT expired/invalid
+
+        if (
+          error.response &&
+          error.response.status === 401
+        ) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("loggedInUser");
+
+          alert(
+            "Your session has expired. Please login again."
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+
+        // Fallback
+
+        setUser(loggedInUser);
+
+      }
+
+    };
+
+
+    fetchLatestUser();
 
   }, [navigate]);
 
-  if (!user) return null;
 
-  const balance = Number(user.deposit);
+  // =====================================================
+  // LOADING
+  // =====================================================
+
+  if (!user) {
+
+    return (
+
+      <div className="send-page">
+
+        <div className="send-card">
+
+          <h2>
+            Loading...
+          </h2>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+  // =====================================================
+  // CURRENT BALANCE
+  // =====================================================
+
+  const balance =
+    Number(user.deposit || 0);
+
+
+  // =====================================================
+  // HANDLE INPUT
+  // =====================================================
 
   const handleChange = (e) => {
 
@@ -53,113 +190,396 @@ function SendMoney() {
 
   };
 
-  const handleTransfer = (e) => {
+
+  // =====================================================
+  // SEND MONEY
+  // =====================================================
+
+  const handleTransfer = async (e) => {
 
     e.preventDefault();
 
-    if (form.pin !== user.pin) {
+
+    // =================================================
+    // PIN VALIDATION
+    // =================================================
+
+    if (
+      form.pin !== String(user.pin)
+    ) {
+
       alert("Invalid PIN");
+
       return;
+
     }
 
-    if (Number(form.amount) <= 0) {
-      alert("Enter a valid amount.");
+
+    // =================================================
+    // AMOUNT VALIDATION
+    // =================================================
+
+    const transferAmount =
+      Number(form.amount);
+
+
+    if (
+      !form.amount ||
+      transferAmount <= 0
+    ) {
+
+      alert(
+        "Enter a valid amount."
+      );
+
       return;
+
     }
 
-    if (Number(form.amount) > balance) {
-      alert("Insufficient Balance.");
+
+    // =================================================
+    // BALANCE VALIDATION
+    // =================================================
+
+    if (
+      transferAmount > balance
+    ) {
+
+      alert(
+        "Insufficient Balance."
+      );
+
       return;
+
     }
 
-    const transferAmount = Number(form.amount);
 
-    const newBalance = balance - transferAmount;
+    // =================================================
+    // ACCOUNT VALIDATION
+    // =================================================
 
-    // Update applications
+    if (
+      !form.account.trim()
+    ) {
 
-    const applications =
-      JSON.parse(localStorage.getItem("applications")) || [];
+      alert(
+        "Enter receiver account number."
+      );
 
-    const updatedApplications = applications.map((app) => {
+      return;
 
-      if (app.mobile === user.mobile) {
+    }
 
-        return {
-          ...app,
-          deposit: newBalance
-        };
+
+    // =================================================
+    // PREVENT SELF TRANSFER
+    // =================================================
+
+    if (
+      form.account.trim() ===
+      String(user.accountNumber)
+    ) {
+
+      alert(
+        "You cannot send money to your own account."
+      );
+
+      return;
+
+    }
+
+
+    try {
+
+      setLoading(true);
+
+
+      // =================================================
+      // GET JWT
+      // =================================================
+
+      const token =
+        localStorage.getItem("token");
+
+
+      if (!token) {
+
+        alert(
+          "Your session has expired. Please login again."
+        );
+
+        navigate("/login");
+
+        return;
 
       }
 
-      return app;
 
-    });
+      // =================================================
+      // SEND MONEY API
+      // =================================================
 
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updatedApplications)
-    );
+      const response =
+        await axios.post(
 
-    // Update logged in user
+          "http://localhost:8082/transactions/send",
 
-    const updatedUser = {
-      ...user,
-      deposit: newBalance
-    };
+          {
+            senderAccount:
+              user.accountNumber,
 
-    localStorage.setItem(
-      "loggedInUser",
-      JSON.stringify(updatedUser)
-    );
+            receiverAccount:
+              form.account.trim(),
 
-    // Save Transaction
+            amount:
+              transferAmount,
 
-    const transactions =
-      JSON.parse(localStorage.getItem("transactions")) || [];
+            remarks:
+              form.remarks.trim() ||
+              "Money Transfer"
+          },
 
-    transactions.unshift({
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
 
-      id: Date.now(),
-    mobile: user.mobile,
-      type: "Debit",
-      title: "Money Transfer",
-      receiver: form.name,
-      bank: form.bank,
-      account: form.account,
-      amount: transferAmount,
-      remarks: form.remarks || "Money Transfer",
-      date: new Date().toLocaleString("en-IN"),
-     status: "Success"
-    });
+              "Content-Type":
+                "application/json"
+            }
+          }
 
-    localStorage.setItem(
-      "transactions",
-      JSON.stringify(transactions)
-    );
+        );
 
-    alert("Money Sent Successfully!");
 
-    navigate("/transactions");
+      console.log(
+        "Transaction Response:",
+        response.data
+      );
+
+
+      // =================================================
+      // FETCH UPDATED USER
+      // =================================================
+
+      const updatedUserResponse =
+        await axios.get(
+
+          `http://localhost:8082/users/${user.id}`,
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "Content-Type":
+                "application/json"
+            }
+          }
+
+        );
+
+
+      const updatedUser =
+        updatedUserResponse.data;
+
+
+      // =================================================
+      // UPDATE REACT STATE
+      // =================================================
+
+      setUser(updatedUser);
+
+
+      // =================================================
+      // UPDATE LOCAL STORAGE
+      // =================================================
+
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(updatedUser)
+      );
+
+
+      // =================================================
+      // SUCCESS
+      // =================================================
+
+      alert(
+        "Money Sent Successfully!"
+      );
+
+
+      // =================================================
+      // CLEAR FORM
+      // =================================================
+
+      setForm({
+        name: "",
+        bank: "",
+        account: "",
+        ifsc: "",
+        amount: "",
+        remarks: "",
+        pin: ""
+      });
+
+
+      // =================================================
+      // GO TO TRANSACTIONS
+      // =================================================
+
+      navigate("/transactions");
+
+
+    } catch (error) {
+
+      console.error(
+        "Transaction Error:",
+        error
+      );
+
+
+      // =================================================
+      // JWT ERROR
+      // =================================================
+
+      if (
+        error.response &&
+        error.response.status === 401
+      ) {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("loggedInUser");
+
+        alert(
+          "Your session has expired. Please login again."
+        );
+
+        navigate("/login");
+
+        return;
+
+      }
+
+
+      // =================================================
+      // FORBIDDEN
+      // =================================================
+
+      if (
+        error.response &&
+        error.response.status === 403
+      ) {
+
+        console.log(
+          "403 Backend Response:",
+          error.response.data
+        );
+
+        alert(
+          "You are not authorized for this operation."
+        );
+
+        return;
+
+      }
+
+
+      // =================================================
+      // BACKEND ERROR
+      // =================================================
+
+      if (error.response) {
+
+        console.log(
+          "Backend Response:",
+          error.response.data
+        );
+
+
+        const backendMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          "Transaction failed.";
+
+
+        alert(
+          backendMessage
+        );
+
+      }
+
+
+      // =================================================
+      // SERVER NOT REACHABLE
+      // =================================================
+
+      else if (error.request) {
+
+        alert(
+          "Backend server is not responding. Make sure Spring Boot is running on port 8082."
+        );
+
+      }
+
+
+      // =================================================
+      // OTHER ERROR
+      // =================================================
+
+      else {
+
+        alert(
+          "Something went wrong while sending money."
+        );
+
+      }
+
+    } finally {
+
+      setLoading(false);
+
+    }
 
   };
+
+
+  // =====================================================
+  // UI
+  // =====================================================
 
   return (
 
     <div className="send-page">
 
+
+      {/* =================================================
+          BALANCE
+      ================================================= */}
+
       <div className="balance-card2">
 
-        <h3>Available Balance</h3>
+        <h3>
+          Available Balance
+        </h3>
 
-        <h1>₹{balance.toLocaleString()}</h1>
+        <h1>
+          ₹{balance.toLocaleString("en-IN")}
+        </h1>
 
       </div>
+
+
+      {/* =================================================
+          SEND MONEY FORM
+      ================================================= */}
 
       <form
         className="send-card"
         onSubmit={handleTransfer}
       >
+
 
         <h2>
 
@@ -168,6 +588,9 @@ function SendMoney() {
           Send Money
 
         </h2>
+
+
+        {/* BENEFICIARY NAME */}
 
         <div className="input-group">
 
@@ -184,9 +607,14 @@ function SendMoney() {
 
         </div>
 
+
+        {/* BANK NAME */}
+
         <div className="input-group">
 
-          🏦
+          <span>
+            🏦
+          </span>
 
           <input
             type="text"
@@ -199,6 +627,9 @@ function SendMoney() {
 
         </div>
 
+
+        {/* RECEIVER ACCOUNT */}
+
         <div className="input-group">
 
           <FiCreditCard />
@@ -206,13 +637,16 @@ function SendMoney() {
           <input
             type="text"
             name="account"
-            placeholder="Account Number"
+            placeholder="Receiver Account Number"
             value={form.account}
             onChange={handleChange}
             required
           />
 
         </div>
+
+
+        {/* IFSC */}
 
         <div className="input-group">
 
@@ -229,9 +663,14 @@ function SendMoney() {
 
         </div>
 
+
+        {/* AMOUNT */}
+
         <div className="input-group">
 
-          💰
+          <span>
+            💰
+          </span>
 
           <input
             type="number"
@@ -239,14 +678,20 @@ function SendMoney() {
             placeholder="Amount"
             value={form.amount}
             onChange={handleChange}
+            min="1"
             required
           />
 
         </div>
 
+
+        {/* REMARKS */}
+
         <div className="input-group">
 
-          📝
+          <span>
+            📝
+          </span>
 
           <input
             type="text"
@@ -258,6 +703,9 @@ function SendMoney() {
 
         </div>
 
+
+        {/* PIN */}
+
         <div className="input-group">
 
           <FiLock />
@@ -266,7 +714,7 @@ function SendMoney() {
             type="password"
             name="pin"
             maxLength={4}
-            placeholder="Enter PIN"
+            placeholder="Enter 4 Digit PIN"
             value={form.pin}
             onChange={handleChange}
             required
@@ -274,14 +722,23 @@ function SendMoney() {
 
         </div>
 
+
+        {/* TRANSFER BUTTON */}
+
         <button
           className="send-btn"
           type="submit"
+          disabled={loading}
         >
 
-          Transfer Money
+          <FiSend />
+
+          {loading
+            ? "Processing..."
+            : "Transfer Money"}
 
         </button>
+
 
       </form>
 

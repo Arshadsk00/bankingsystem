@@ -93,10 +93,10 @@ useEffect(() => {
             <span>My Profile</span>
           </NavLink>
 
-          <NavLink to="/admin" className="menu-item">
+          {/* <NavLink to="/admin" className="menu-item">
             <FiShield />
             <span>Admin Panel</span>
-          </NavLink>
+          </NavLink> */}
 
           <NavLink to="/settings" className="menu-item">
             <FiSettings />
@@ -112,11 +112,24 @@ useEffect(() => {
         <div className="sidebar-bottom">
 
           <div className="user-card">
+           
+<div className="avatar-circle">
+{
+user?.fullName
+? user.fullName
+    .split(" ")
+    .map(word => word[0])
+    .join("")
+    .substring(0,2)
+    .toUpperCase()
+: "U"
+}
+</div>
 
-            <img
+            {/* <img
               src="https://i.pravatar.cc/80?img=12"
               alt=""
-            />
+            /> */}
 
             <div>
 
