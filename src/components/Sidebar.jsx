@@ -1,10 +1,17 @@
-import { useState,useEffect } from "react";
-import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import {
+  useState,
+  useEffect
+} from "react";
+
+import {
+  NavLink,
+  useNavigate
+} from "react-router-dom";
+
 import {
   FiHome,
   FiUserPlus,
   FiClipboard,
-  FiShield,
   FiLogOut,
   FiSettings,
   FiUser,
@@ -13,43 +20,139 @@ import {
 
 import "../css/Sidebar.css";
 
+
 function Sidebar() {
 
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const closeSidebar = () => setOpen(false);
-  const navigate=useNavigate();
-  const [user, setUser] = useState(null);
+  const [open, setOpen] =
+    useState(false);
 
-useEffect(() => {
+  const [user, setUser] =
+    useState(null);
 
-  const loggedInUser =
-    JSON.parse(localStorage.getItem("loggedInUser"));
 
-  if (loggedInUser) {
-    setUser(loggedInUser);
-  }
+  // ==========================================
+  // CLOSE SIDEBAR
+  // ==========================================
 
-}, []);
+  const closeSidebar = () => {
+    setOpen(false);
+  };
+
+
+  // ==========================================
+  // LOAD LOGGED-IN USER
+  // ==========================================
+
+  useEffect(() => {
+
+    const storedUser =
+      localStorage.getItem(
+        "loggedInUser"
+      );
+
+
+    if (
+      !storedUser ||
+      storedUser === "undefined" ||
+      storedUser === "null"
+    ) {
+
+      setUser(null);
+
+      return;
+    }
+
+
+    try {
+
+      const loggedUser =
+        JSON.parse(storedUser);
+
+      setUser(loggedUser);
+
+    } catch (error) {
+
+      console.error(
+        "Invalid loggedInUser:",
+        error
+      );
+
+      localStorage.removeItem(
+        "loggedInUser"
+      );
+
+      setUser(null);
+    }
+
+  }, []);
+
+
+  // ==========================================
+  // LOGOUT
+  // ==========================================
+
+  const logout = () => {
+
+    localStorage.removeItem(
+      "loggedInUser"
+    );
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    navigate("/login");
+  };
+
+
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
+
     <>
+
+      {/* MOBILE MENU BUTTON */}
 
       <button
         className="menu-toggle"
-        onClick={() => setOpen(true)}
+        onClick={() =>
+          setOpen(true)
+        }
       >
         ☰
       </button>
 
+
+      {/* OVERLAY */}
+
       {open && (
+
         <div
           className="overlay"
           onClick={closeSidebar}
         />
+
       )}
 
-      <aside className={open ? "sidebar active" : "sidebar"}>
+
+      {/* SIDEBAR */}
+
+      <aside
+        className={
+          open
+            ? "sidebar active"
+            : "sidebar"
+        }
+      >
+
+
+        {/* =====================================
+            TOP
+        ===================================== */}
 
         <div className="sidebar-top">
 
@@ -61,9 +164,13 @@ useEffect(() => {
 
             <div>
 
-              <h2>SAFE BANK</h2>
+              <h2>
+                SAFE BANK
+              </h2>
 
-              <p>Digital Banking</p>
+              <p>
+                Digital Banking
+              </p>
 
             </div>
 
@@ -71,80 +178,154 @@ useEffect(() => {
 
         </div>
 
+
+        {/* =====================================
+            MENU
+        ===================================== */}
+
         <nav className="sidebar-menu">
 
-          <NavLink to="/dashboard" className="menu-item">
+
+          <NavLink
+            to="/dashboard"
+            className="menu-item"
+            onClick={closeSidebar}
+          >
+
             <FiHome />
-            <span>Dashboard</span>
+
+            <span>
+              Dashboard
+            </span>
+
           </NavLink>
 
-          <NavLink to="/create-account" className="menu-item">
+
+          <NavLink
+            to="/create-account"
+            className="menu-item"
+            onClick={closeSidebar}
+          >
+
             <FiUserPlus />
-            <span>Create Account</span>
+
+            <span>
+              Create Account
+            </span>
+
           </NavLink>
 
-          <NavLink to="/application-status" className="menu-item">
+
+          <NavLink
+            to="/application-status"
+            className="menu-item"
+            onClick={closeSidebar}
+          >
+
             <FiClipboard />
-            <span>Application Status</span>
+
+            <span>
+              Application Status
+            </span>
+
           </NavLink>
 
-          <NavLink to="/profile" className="menu-item">
+
+          <NavLink
+            to="/profile"
+            className="menu-item"
+            onClick={closeSidebar}
+          >
+
             <FiUser />
-            <span>My Profile</span>
+
+            <span>
+              My Profile
+            </span>
+
           </NavLink>
 
-          {/* <NavLink to="/admin" className="menu-item">
-            <FiShield />
-            <span>Admin Panel</span>
-          </NavLink> */}
 
-          <NavLink to="/settings" className="menu-item">
+          <NavLink
+            to="/settings"
+            className="menu-item"
+            onClick={closeSidebar}
+          >
+
             <FiSettings />
-            <span>Settings</span>
+
+            <span>
+              Settings
+            </span>
+
           </NavLink>
-          <button className="contact-btn" onClick={() => navigate("/contact")}>
-             <FiPhone />
-              <span>Contact Us</span>
-        </button>
+
+
+          {/* CONTACT */}
+
+          <button
+            className="contact-btn"
+            onClick={() => {
+
+              closeSidebar();
+
+              navigate("/contact");
+
+            }}
+          >
+
+            <FiPhone />
+
+            <span>
+              Contact Us
+            </span>
+
+          </button>
+
 
         </nav>
 
+
+        {/* =====================================
+            BOTTOM
+        ===================================== */}
+
         <div className="sidebar-bottom">
 
-          <div className="user-card">
-           
-<div className="avatar-circle">
-{
-user?.fullName
-? user.fullName
-    .split(" ")
-    .map(word => word[0])
-    .join("")
-    .substring(0,2)
-    .toUpperCase()
-: "U"
-}
-</div>
 
-            {/* <img
-              src="https://i.pravatar.cc/80?img=12"
-              alt=""
-            /> */}
+          {/* USER CARD */}
+
+          <div className="user-card">
 
             <div>
 
-              <h3>{user?.fullName}</h3>
-              <p>{user?.accountType}</p>
-              
+              <h3>
+                {user?.fullName ||
+                  "Customer"}
+              </h3>
+
+              <p>
+                {user?.accountType ||
+                  "SAFE BANK Customer"}
+              </p>
+
             </div>
 
           </div>
 
-          <button className="logout-btn" onClick={()=>navigate("/login")}>
+
+          {/* LOGOUT */}
+
+          <button
+            className="logout-btn"
+            onClick={logout}
+          >
 
             <FiLogOut />
 
-            <span>Logout</span>
+            <span>
+              Logout
+            </span>
 
           </button>
 
@@ -153,6 +334,7 @@ user?.fullName
       </aside>
 
     </>
+
   );
 }
 

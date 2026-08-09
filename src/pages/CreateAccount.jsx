@@ -24,7 +24,7 @@ function CreateAccount() {
   email: "",
   gender: "",
 
-  aadhaar: "",
+  aadhar: "",
   pan: "",
   address: "",
 
@@ -37,6 +37,7 @@ function CreateAccount() {
 
  
   const nextStep = () => {
+     setErrors({});
 
   if (step === 1) {
 
@@ -56,6 +57,11 @@ function CreateAccount() {
       setErrors({
     mobile:"Mobile number must contain exactly 10 digits."
       });
+        if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+          formData.email
+        )
+      )
 
 return;
      
@@ -87,7 +93,7 @@ return;
   if (step === 2) {
 
     if (
-      !formData.aadhaar ||
+      !formData.aadhar ||
       !formData.pan ||
       !formData.address
     ) {
@@ -95,7 +101,7 @@ return;
       return;
     }
 
-    if (formData.aadhaar.length !== 12) {
+    if (formData.aadhar.length !== 12) {
       
       alert("Aadhaar number must contain exactly 12 digits.");
       return;

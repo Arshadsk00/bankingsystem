@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 import {
-  FiEdit,
   FiSave,
   FiLogOut,
   FiLock,
@@ -18,326 +19,737 @@ function Profile() {
 
   const [user, setUser] = useState(null);
 
-  const [mobile,setMobile]=useState("");
-  const [email,setEmail]=useState("");
-  const [address,setAddress]=useState("");
+  // Profile fields
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
 
-  const [currentPin,setCurrentPin]=useState("");
-  const [newPin,setNewPin]=useState("");
-  const [confirmPin,setConfirmPin]=useState("");
+  // PIN fields
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
 
-  useEffect(()=>{
+  // =====================================================
+  // LOAD LOGGED-IN USER
+  // =====================================================
 
-    const loggedUser=
-      JSON.parse(localStorage.getItem("loggedInUser"));
+  useEffect(() => {
 
-    if(!loggedUser){
+    const storedUser =
+      localStorage.getItem("loggedInUser");
+
+    const token =
+      localStorage.getItem("token");
+
+    if (
+      !storedUser ||
+      storedUser === "undefined" ||
+      !token
+    ) {
+
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("token");
+
       navigate("/login");
+
       return;
     }
 
-    setUser(loggedUser);
+    try {
 
-    setMobile(loggedUser.mobile||"");
-    setEmail(loggedUser.email||"");
-    setAddress(loggedUser.address||"");
+      const loggedUser =
+        JSON.parse(storedUser);
 
-  },[]);
+      if (!loggedUser) {
 
-  if(!user) return null;
+        navigate("/login");
 
-  const saveProfile=()=>{
+        return;
+      }
 
-    const applications=
-      JSON.parse(localStorage.getItem("applications"))||[];
+      setUser(loggedUser);
 
-    const updated=applications.map(app=>
+      setMobile(
+        loggedUser.mobile || ""
+      );
 
-      app.id===user.id
+      setEmail(
+        loggedUser.email || ""
+      );
 
-      ?{
-          ...app,
-          mobile,
-          email,
-          address
-       }
+      setAddress(
+        loggedUser.address || ""
+      );
 
-      :app
+    } catch (error) {
 
-    );
+      console.error(
+        "Invalid loggedInUser:",
+        error
+      );
 
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updated)
-    );
+      localStorage.removeItem(
+        "loggedInUser"
+      );
 
-    const updatedUser=
-      updated.find(app=>app.id===user.id);
+      localStorage.removeItem(
+        "token"
+      );
 
-    localStorage.setItem(
-      "loggedInUser",
-      JSON.stringify(updatedUser)
-    );
+      navigate("/login");
+    }
 
-    setUser(updatedUser);
+  }, [navigate]);
 
-    alert("Profile Updated Successfully");
+
+  // =====================================================
+  // UPDATE PROFILE
+  // Mobile + Email + Address
+  // =====================================================
+
+  const saveProfile = async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) {
+
+        alert("Session expired. Please login again.");
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      // Basic validation
+      if (!mobile || mobile.length !== 10) {
+
+        alert(
+          "Mobile number must contain exactly 10 digits."
+        );
+
+        return;
+      }
+
+
+      if (!email) {
+
+        alert(
+          "Email cannot be empty."
+        );
+
+        return;
+      }
+
+
+      // Update database
+      const response = await axios.put(
+
+        `http://localhost:8082/users/${user.id}`,
+
+        {
+          mobile: mobile,
+          email: email,
+          address: address
+        },
+
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+          }
+        }
+
+      );
+
+
+      // Backend returns updated user
+      const updatedUser =
+        response.data;
+
+
+      // Update React state
+      setUser(updatedUser);
+
+
+      // Update localStorage
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(updatedUser)
+      );
+
+
+      // Update form values
+      setMobile(
+        updatedUser.mobile || ""
+      );
+
+      setEmail(
+        updatedUser.email || ""
+      );
+
+      setAddress(
+        updatedUser.address || ""
+      );
+
+
+      alert(
+        "Profile Updated Successfully"
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Profile update error:",
+        error
+      );
+
+
+      if (
+        error.response &&
+        error.response.status === 403
+      ) {
+
+        alert(
+          "Session expired. Please login again."
+        );
+
+        localStorage.removeItem(
+          "loggedInUser"
+        );
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      alert(
+        error.response?.data ||
+        "Failed to update profile."
+      );
+    }
+
   };
 
-  const changePin=()=>{
 
-    if(currentPin!==user.pin){
-      alert("Current PIN Incorrect");
-      return;
+  // =====================================================
+  // CHANGE PIN
+  // =====================================================
+
+  const changePin = async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+
+      if (!token) {
+
+        alert(
+          "Session expired. Please login again."
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      // Current PIN
+      if (!currentPin) {
+
+        alert(
+          "Enter your current PIN."
+        );
+
+        return;
+      }
+
+
+      // New PIN
+      if (!newPin) {
+
+        alert(
+          "Enter your new PIN."
+        );
+
+        return;
+      }
+
+
+      // 4 digit validation
+      if (
+        !/^\d{4}$/.test(newPin)
+      ) {
+
+        alert(
+          "PIN must contain exactly 4 digits."
+        );
+
+        return;
+      }
+
+
+      // Confirm PIN
+      if (
+        newPin !== confirmPin
+      ) {
+
+        alert(
+          "New PIN and Confirm PIN do not match."
+        );
+
+        return;
+      }
+
+
+      // =================================================
+      // SEND PIN TO BACKEND
+      // =================================================
+
+      const response = await axios.put(
+
+        `http://localhost:8082/users/${user.id}/pin`,
+
+        {
+          currentPin: currentPin,
+          newPin: newPin
+        },
+
+        {
+          headers: {
+
+            Authorization:
+              `Bearer ${token}`,
+
+            "Content-Type":
+              "application/json"
+
+          }
+        }
+
+      );
+
+
+      // Backend returns updated user
+      const updatedUser =
+        response.data;
+
+
+      // Update React state
+      setUser(updatedUser);
+
+
+      // Update localStorage
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(updatedUser)
+      );
+
+
+      // Clear PIN fields
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+
+
+      alert(
+        "PIN Changed Successfully"
+      );
+
+    } catch (error) {
+
+      console.error(
+        "PIN change error:",
+        error
+      );
+
+
+      if (
+        error.response &&
+        error.response.status === 403
+      ) {
+
+        alert(
+          "Session expired. Please login again."
+        );
+
+        localStorage.removeItem(
+          "loggedInUser"
+        );
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      alert(
+        error.response?.data ||
+        "Failed to change PIN."
+      );
+
     }
-
-    if(newPin.length!==4){
-      alert("PIN must be 4 digits");
-      return;
-    }
-
-    if(newPin!==confirmPin){
-      alert("PINs do not match");
-      return;
-    }
-
-    const applications=
-      JSON.parse(localStorage.getItem("applications"))||[];
-
-    const updated=applications.map(app=>
-
-      app.id===user.id
-
-      ?{
-          ...app,
-          pin:newPin
-       }
-
-      :app
-
-    );
-
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(updated)
-    );
-
-    const updatedUser=
-      updated.find(app=>app.id===user.id);
-
-    localStorage.setItem(
-      "loggedInUser",
-      JSON.stringify(updatedUser)
-    );
-
-    setUser(updatedUser);
-
-    setCurrentPin("");
-    setNewPin("");
-    setConfirmPin("");
-
-    alert("PIN Changed Successfully");
 
   };
 
-  const logout=()=>{
 
-    localStorage.removeItem("loggedInUser");
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  const logout = () => {
+
+    localStorage.removeItem(
+      "loggedInUser"
+    );
+
+    localStorage.removeItem(
+      "token"
+    );
 
     navigate("/");
-
   };
 
-  return(
 
-<div className="profile-page">
+  // =====================================================
+  // LOADING
+  // =====================================================
 
-<div className="profile-card">
+  if (!user) {
 
-<div className="profile-header">
+    return (
+      <div className="profile-loading">
+        Loading...
+      </div>
+    );
 
-<div className="avatar">
-👤
-</div>
+  }
 
-<h2>{user.fullName}</h2>
 
-<p>{user.accountType} Account</p>
+  // =====================================================
+  // UI
+  // =====================================================
 
-<span className="verified">
-✔ Verified Customer
-</span>
+  return (
 
-</div>
+    <div className="profile-page">
 
-<div className="section">
+      <div className="profile-container">
 
-<h3>Personal Details</h3>
 
-<div className="info-grid">
+        {/* =========================================
+            HEADER
+        ========================================= */}
 
-<div>
-<label>Full Name</label>
-<input value={user.fullName} readOnly/>
-</div>
+        <div className="profile-header">
 
-<div>
-<label>Father Name</label>
-<input value={user.fatherName} readOnly/>
-</div>
+          <div>
 
-<div>
-<label>DOB</label>
-<input value={user.dob} readOnly/>
-</div>
+            <h1>
+              My Profile
+            </h1>
 
-<div>
-<label>Gender</label>
-<input value={user.gender} readOnly/>
-</div>
+            <p>
+              Manage your SAFE BANK account details
+            </p>
 
-<div>
-<label>Aadhaar</label>
-<input value={user.aadhaar} readOnly/>
-</div>
+          </div>
 
-<div>
-<label>PAN</label>
-<input value={user.pan} readOnly/>
-</div>
 
-</div>
+          <button
+            className="logout-btn"
+            onClick={logout}
+          >
 
-</div>
+            <FiLogOut />
 
-<div className="section">
+            Logout
 
-<h3>Contact Details</h3>
+          </button>
 
-<label>
-<FiPhone/>
-Mobile
-</label>
+        </div>
 
-<input
-value={mobile}
-onChange={(e)=>setMobile(e.target.value)}
-/>
 
-<label>
-<FiMail/>
-Email
-</label>
+        {/* =========================================
+            ACCOUNT INFORMATION
+        ========================================= */}
 
-<input
-value={email}
-onChange={(e)=>setEmail(e.target.value)}
-/>
+        <div className="profile-card">
 
-<label>
-<FiMapPin/>
-Address
-</label>
+          <h2>
+            Account Information
+          </h2>
 
-<textarea
-rows="3"
-value={address}
-onChange={(e)=>setAddress(e.target.value)}
-></textarea>
 
-<button
-className="save-btn"
-onClick={saveProfile}
->
+          <div className="profile-grid">
 
-<FiSave/>
 
-Save Changes
+            {/* FULL NAME */}
 
-</button>
+            <div className="profile-field">
 
-</div>
+              <label>
+                Full Name
+              </label>
 
-<div className="section">
+              <input
+                type="text"
+                value={user.fullName || ""}
+                disabled
+              />
 
-<h3>Security</h3>
+            </div>
 
-<input
-type="password"
-placeholder="Current PIN"
-value={currentPin}
-maxLength={4}
-onChange={(e)=>setCurrentPin(e.target.value)}
-/>
 
-<input
-type="password"
-placeholder="New PIN"
-value={newPin}
-maxLength={4}
-onChange={(e)=>setNewPin(e.target.value)}
-/>
+            {/* ACCOUNT NUMBER */}
 
-<input
-type="password"
-placeholder="Confirm PIN"
-value={confirmPin}
-maxLength={4}
-onChange={(e)=>setConfirmPin(e.target.value)}
-/>
+            <div className="profile-field">
 
-<button
-className="pin-btn"
-onClick={changePin}
->
+              <label>
+                Account Number
+              </label>
 
-<FiLock/>
+              <input
+                type="text"
+                value={
+                  user.accountNumber || ""
+                }
+                disabled
+              />
 
-Change PIN
+            </div>
 
-</button>
 
-</div>
+            {/* MOBILE */}
 
-<div className="section">
+            <div className="profile-field">
 
-<h3>Account Information</h3>
+              <label>
+                <FiPhone />
+                Mobile Number
+              </label>
 
-<div className="account-box">
+              <input
+                type="text"
+                value={mobile}
+                maxLength={10}
+                onChange={(e) =>
+                  setMobile(
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    )
+                  )
+                }
+              />
 
-<p><b>Account Number</b></p>
+            </div>
 
-<h2>
-XXXX XXXX {String(user.mobile).slice(-4)}
-</h2>
 
-<p><b>Balance</b></p>
+            {/* EMAIL */}
 
-<h1>
-₹{Number(user.deposit).toLocaleString()}
-</h1>
+            <div className="profile-field">
 
-</div>
+              <label>
+                <FiMail />
+                Email
+              </label>
 
-</div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
+              />
 
-<button
-className="logout-btn"
-onClick={logout}
->
+            </div>
 
-<FiLogOut/>
 
-Logout
+            {/* ADDRESS */}
 
-</button>
+            <div className="profile-field full-width">
 
-</div>
+              <label>
+                <FiMapPin />
+                Address
+              </label>
 
-</div>
+              <textarea
+                value={address}
+                onChange={(e) =>
+                  setAddress(e.target.value)
+                }
+                rows="3"
+              />
 
-);
+            </div>
 
+
+          </div>
+
+
+          {/* SAVE */}
+
+          <button
+            className="save-btn"
+            onClick={saveProfile}
+          >
+
+            <FiSave />
+
+            Save Changes
+
+          </button>
+
+        </div>
+
+
+        {/* =========================================
+            CHANGE PIN
+        ========================================= */}
+
+        <div className="profile-card pin-card">
+
+          <h2>
+
+            <FiLock />
+
+            Change PIN
+
+          </h2>
+
+
+          <p className="pin-description">
+
+            Change your 4-digit banking PIN.
+
+          </p>
+
+
+          <div className="profile-grid">
+
+
+            {/* CURRENT PIN */}
+
+            <div className="profile-field">
+
+              <label>
+                Current PIN
+              </label>
+
+              <input
+                type="password"
+                placeholder="Enter current PIN"
+                value={currentPin}
+                maxLength={4}
+                inputMode="numeric"
+                onChange={(e) =>
+                  setCurrentPin(
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    )
+                  )
+                }
+              />
+
+            </div>
+
+
+            {/* NEW PIN */}
+
+            <div className="profile-field">
+
+              <label>
+                New PIN
+              </label>
+
+              <input
+                type="password"
+                placeholder="Enter new PIN"
+                value={newPin}
+                maxLength={4}
+                inputMode="numeric"
+                onChange={(e) =>
+                  setNewPin(
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    )
+                  )
+                }
+              />
+
+            </div>
+
+
+            {/* CONFIRM PIN */}
+
+            <div className="profile-field">
+
+              <label>
+                Confirm New PIN
+              </label>
+
+              <input
+                type="password"
+                placeholder="Confirm new PIN"
+                value={confirmPin}
+                maxLength={4}
+                inputMode="numeric"
+                onChange={(e) =>
+                  setConfirmPin(
+                    e.target.value.replace(
+                      /\D/g,
+                      ""
+                    )
+                  )
+                }
+              />
+
+            </div>
+
+
+          </div>
+
+
+          <button
+            className="pin-btn"
+            onClick={changePin}
+          >
+
+            <FiLock />
+
+            Change PIN
+
+          </button>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  );
 }
 
 export default Profile;

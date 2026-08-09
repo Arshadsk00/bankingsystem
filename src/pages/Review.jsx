@@ -1,6 +1,5 @@
-
-
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/Review.css";
 
 function Review() {
@@ -10,183 +9,454 @@ function Review() {
   const { state } = useLocation();
 
   const formData = state;
-  console.log(formData);
 
-  const handleSubmit = () => {
 
-    const applications =
-      JSON.parse(localStorage.getItem("applications")) || [];
+  // =====================================================
+  // SAFETY CHECK
+  // =====================================================
 
-      // Generate Application Number
-  const applicationNumber =
-    `SB${new Date().getFullYear()}${String(applications.length + 1).padStart(5, "0")}`;
+  if (!formData) {
 
-  // Check duplicate Mobile Number
-  const mobileExists = applications.some(
-    app => app.mobile === formData.mobile
-  );
+    return (
 
-  if (mobileExists) {
-    alert("❌ Mobile Number already registered.");
-    return;
+      <div className="review-card">
+
+        <h2>
+          No application data found.
+        </h2>
+
+        <button
+          onClick={() =>
+            navigate("/create-account")
+          }
+        >
+          Go to Create Account
+        </button>
+
+      </div>
+
+    );
   }
 
-  // Check duplicate Email
-  const emailExists = applications.some(
-    app => app.email === formData.email
-  );
 
-  if (emailExists) {
-    alert("❌ Email already registered.");
-    return;
-  }
+  // =====================================================
+  // SUBMIT APPLICATION
+  // =====================================================
 
-  // Check duplicate Aadhaar
-  const aadhaarExists = applications.some(
-    app => app.aadhaar === formData.aadhaar
-  );
+  const handleSubmit = async () => {
 
-  if (aadhaarExists) {
-    alert("❌ Aadhaar Number already registered.");
-    return;
-  }
+    try {
 
-  // Check duplicate PAN
-  const panExists = applications.some(
-    app => app.pan === formData.pan
-  );
+      // ================================================
+      // BASIC VALIDATION
+      // ================================================
 
-  if (panExists) {
-    alert("❌ PAN Number already registered.");
-    return;
-  }
+      if (
+        !formData.fullName ||
+        !formData.mobile ||
+        !formData.email ||
+        !formData.aadhar ||
+        !formData.pan ||
+        !formData.accountType ||
+        !formData.nominee ||
+        !formData.deposit ||
+        !formData.pin
+      ) {
 
-  // Save application
-  applications.push({
-    applicationNumber,
-    ...formData,
-    status: "Pending",
-    submittedOn: new Date().toLocaleDateString(),
-  });
+        alert(
+          "Please complete all required details."
+        );
 
-  localStorage.setItem(
-    "applications",
-    JSON.stringify(applications)
-  );
+        return;
+      }
 
-  alert("✅ Application Submitted Successfully!");
 
-  navigate("/success");
-};
+      // ================================================
+      // PREPARE DATA
+      // ================================================
 
-    
+      const userData = {
 
- return (
-  <div className="page-content">
-  <div className="review-page">
+        fullName:
+          formData.fullName,
+
+        fatherName:
+          formData.fatherName,
+
+        dob:
+          formData.dob,
+
+        mobile:
+          formData.mobile,
+
+        email:
+          formData.email,
+
+        gender:
+          formData.gender,
+
+        aadhar:
+          formData.aadhar,
+
+        pan:
+          formData.pan,
+
+        address:
+          formData.address,
+
+        accountType:
+          formData.accountType,
+
+        nominee:
+          formData.nominee,
+
+        deposit:
+          Number(formData.deposit),
+
+        pin:
+          formData.pin
+
+      };
+
+
+      console.log(
+        "Sending application to backend:",
+        userData
+      );
+
+
+      // ================================================
+      // SEND TO SPRING BOOT
+      // ================================================
+
+      const response =
+        await axios.post(
+
+          "http://localhost:8082/users",
+
+          userData,
+
+          {
+            headers: {
+              "Content-Type":
+                "application/json"
+            }
+          }
+
+        );
+
+
+      // ================================================
+      // SUCCESS
+      // ================================================
+
+      console.log(
+        "Application saved:",
+        response.data
+      );
+
+
+      alert(
+        "✅ Application Submitted Successfully!"
+      );
+
+
+      // Go to success page
+
+      navigate(
+        "/success",
+        {
+          state: response.data
+        }
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Application submission error:",
+        error
+      );
+
+
+      // ================================================
+      // BACKEND ERROR
+      // ================================================
+
+      if (
+        error.response
+      ) {
+
+        console.error(
+          "Status:",
+          error.response.status
+        );
+
+        console.error(
+          "Backend response:",
+          error.response.data
+        );
+
+
+        alert(
+          error.response.data ||
+          "Failed to submit application."
+        );
+
+      } else {
+
+        alert(
+          "Cannot connect to the backend server."
+        );
+
+      }
+
+    }
+
+  };
+
+
+  // =====================================================
+  // UI
+  // =====================================================
+
+  return (
 
     <div className="review-card">
 
-      <h1 className="review-title">🏦 Review Your Application</h1>
+      <h1 className="review-title">
+        🏦 Review Your Application
+      </h1>
 
-      {/* Personal Details */}
+
+      {/* =================================================
+          PERSONAL DETAILS
+      ================================================= */}
+
       <div className="review-section">
-        <h2>👤 Personal Details</h2>
+
+        <h2>
+          👤 Personal Details
+        </h2>
+
 
         <div className="details-grid">
 
           <div className="detail-box">
-            <span>Full Name</span>
-            <p>{formData.fullName}</p>
+
+            <span>
+              Full Name
+            </span>
+
+            <p>
+              {formData.fullName}
+            </p>
+
           </div>
 
-          <div className="detail-box">
-            <span>Father Name</span>
-            <p>{formData.fatherName}</p>
-          </div>
 
           <div className="detail-box">
-            <span>Date of Birth</span>
-            <p>{formData.dob}</p>
+
+            <span>
+              Father Name
+            </span>
+
+            <p>
+              {formData.fatherName}
+            </p>
+
           </div>
 
-          <div className="detail-box">
-            <span>Mobile</span>
-            <p>{formData.mobile}</p>
-          </div>
 
           <div className="detail-box">
-            <span>Email</span>
-            <p>{formData.email}</p>
+
+            <span>
+              Date of Birth
+            </span>
+
+            <p>
+              {formData.dob}
+            </p>
+
           </div>
 
+
           <div className="detail-box">
-            <span>Gender</span>
-            <p>{formData.gender}</p>
+
+            <span>
+              Mobile
+            </span>
+
+            <p>
+              {formData.mobile}
+            </p>
+
+          </div>
+
+
+          <div className="detail-box">
+
+            <span>
+              Email
+            </span>
+
+            <p>
+              {formData.email}
+            </p>
+
+          </div>
+
+
+          <div className="detail-box">
+
+            <span>
+              Gender
+            </span>
+
+            <p>
+              {formData.gender}
+            </p>
+
           </div>
 
         </div>
+
       </div>
 
-      {/* KYC */}
+
+      {/* =================================================
+          KYC DETAILS
+      ================================================= */}
+
       <div className="review-section">
 
-        <h2>🪪 KYC Details</h2>
+        <h2>
+          🪪 KYC Details
+        </h2>
+
 
         <div className="details-grid">
 
           <div className="detail-box">
-            <span>Aadhaar</span>
-            <p>XXXX XXXX {formData.aadhaar?.slice(-4)}</p>
+
+            <span>
+              Aadhar
+            </span>
+
+            <p>
+              XXXX XXXX{" "}
+              {formData.aadhar?.slice(-4)}
+            </p>
+
           </div>
 
+
           <div className="detail-box">
-            <span>PAN</span>
-            <p>{formData.pan}</p>
+
+            <span>
+              PAN
+            </span>
+
+            <p>
+              {formData.pan}
+            </p>
+
           </div>
+
 
           <div className="detail-box full">
-            <span>Address</span>
-            <p>{formData.address}</p>
+
+            <span>
+              Address
+            </span>
+
+            <p>
+              {formData.address}
+            </p>
+
           </div>
 
         </div>
 
       </div>
 
-      {/* Account */}
+
+      {/* =================================================
+          ACCOUNT DETAILS
+      ================================================= */}
+
       <div className="review-section">
 
-        <h2>🏦 Account Details</h2>
+        <h2>
+          🏦 Account Details
+        </h2>
+
 
         <div className="details-grid">
 
           <div className="detail-box">
-            <span>Account Type</span>
-            <p>{formData.accountType}</p>
+
+            <span>
+              Account Type
+            </span>
+
+            <p>
+              {formData.accountType}
+            </p>
+
           </div>
 
-          <div className="detail-box">
-            <span>Nominee</span>
-            <p>{formData.nominee}</p>
-          </div>
 
           <div className="detail-box">
-            <span>Initial Deposit</span>
-            <p>₹ {formData.deposit}</p>
+
+            <span>
+              Nominee
+            </span>
+
+            <p>
+              {formData.nominee}
+            </p>
+
+          </div>
+
+
+          <div className="detail-box">
+
+            <span>
+              Initial Deposit
+            </span>
+
+            <p>
+              ₹ {formData.deposit}
+            </p>
+
           </div>
 
         </div>
 
       </div>
+
+
+      {/* =================================================
+          BUTTONS
+      ================================================= */}
 
       <div className="btn-group">
 
-        <button className="edit-btn" onClick={() => navigate(-1)}>
+        <button
+          className="edit-btn"
+          onClick={() =>
+            navigate(-1)
+          }
+        >
           ✏ Edit
         </button>
 
-        <button className="submit-btn" onClick={handleSubmit}>
+
+        <button
+          className="submit-btn"
+          onClick={handleSubmit}
+        >
           ✔ Confirm & Submit
         </button>
 
@@ -194,8 +464,7 @@ function Review() {
 
     </div>
 
-  </div>
-</div>
-);
+  );
 }
+
 export default Review;

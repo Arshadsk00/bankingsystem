@@ -19,36 +19,94 @@ function AdminLogin() {
 
         try {
 
+            console.log("Admin login started");
+
             const res = await axios.post(
                 "http://localhost:8082/admin/login",
                 {
-                    email,
-                    password,
+                    email: email,
+                    password: password
                 }
             );
 
-            if (res.data.role === "ADMIN") {
+            console.log("Admin login response:", res.data);
 
+            // ==============================
+            // LOGIN SUCCESS
+            // ==============================
+
+            if (
+                res.data &&
+                res.data.token
+            ) {
+
+                // Save JWT token
+                localStorage.setItem(
+                    "token",
+                    res.data.token
+                );
+
+                // Save admin information
                 localStorage.setItem(
                     "admin",
                     JSON.stringify(res.data)
                 );
 
+                // Save role
+                localStorage.setItem(
+                    "adminRole",
+                    res.data.role || "ADMIN"
+                );
+
+                console.log(
+                    "Admin token saved"
+                );
+
+                console.log(
+                    "Admin role:",
+                    res.data.role
+                );
+
+                // Go to admin dashboard
                 navigate("/admin-dashboard");
 
             } else {
 
-                setError("Invalid Email or Password");
+                setError(
+                    "Invalid Email or Password"
+                );
 
             }
 
-        } catch {
+        } catch (error) {
 
-            setError("Login Failed");
+            console.error(
+                "Admin login error:",
+                error
+            );
 
+            // Show backend error if available
+            if (error.response) {
+
+                console.error(
+                    "Status:",
+                    error.response.status
+                );
+
+                console.error(
+                    "Backend response:",
+                    error.response.data
+                );
+
+            }
+
+            setError(
+                error.response?.data ||
+                "Login Failed"
+            );
         }
-
     };
+
 
     return (
 
@@ -60,63 +118,80 @@ function AdminLogin() {
                     🏦
                 </div>
 
-                <h1>SAFE BANK</h1>
+                <h1>
+                    SAFE BANK
+                </h1>
 
-                <h2>Admin Login</h2>
+                <h2>
+                    Admin Login
+                </h2>
+
 
                 <form onSubmit={handleLogin}>
+
+                    {/* EMAIL */}
 
                     <input
                         type="email"
                         placeholder="Admin Email"
                         value={email}
-                        onChange={(e)=>setEmail(e.target.value)}
+                        onChange={(e) =>
+                            setEmail(e.target.value)
+                        }
                         required
                     />
+
+
+                    {/* PASSWORD */}
 
                     <input
                         type="password"
                         placeholder="Password"
                         value={password}
-                        onChange={(e)=>setPassword(e.target.value)}
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
                         required
                     />
 
-                    {error &&
+
+                    {/* ERROR */}
+
+                    {error && (
 
                         <p className="error">
                             {error}
                         </p>
 
-                    }
+                    )}
 
-                    <button type="submit"> Login</button>
-                   
+
+                    {/* LOGIN */}
+
+                    <button type="submit">
+                        Login
+                    </button>
+
+
+                    {/* BACK */}
+
                     <button
-    type="button"
-    className="back-home-btn"
-    onClick={() => navigate("/")}
->
-    ← Back to Home
-</button>
-                  
-                </form>
-  <div className="admin-footer">
-    <p>🔒 Secure Admin Portal</p>
-    <p>
-        Authorized Personnel Only
-        <br />
-        SAFE BANK Management System
-    </p>
-</div>
-            </div>
-            
+                        type="button"
+                        className="back-home-btn"
+                        onClick={() =>
+                            navigate("/")
+                        }
+                    >
+                        ← Back to Home
+                    </button>
 
+                </form>
+
+            </div>
 
         </div>
 
     );
-
 }
 
 export default AdminLogin;

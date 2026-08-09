@@ -25,248 +25,292 @@ function Dashboard() {
   // =====================================================
   // LOAD USER + TRANSACTIONS
   // =====================================================
+    
 
   useEffect(() => {
 
-    const loggedInUser =
-      JSON.parse(
-        localStorage.getItem("loggedInUser")
+  const storedUser = localStorage.getItem("loggedInUser");
+  const token = localStorage.getItem("token");
+
+  // ==========================================
+  // CHECK LOGIN
+  // ==========================================
+
+  if (!storedUser || storedUser === "undefined" || !token) {
+
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("token");
+
+    navigate("/login");
+    return;
+  }
+
+  let loggedInUser;
+
+  try {
+
+    loggedInUser = JSON.parse(storedUser);
+
+  } catch (error) {
+
+    console.error("Invalid loggedInUser:", error);
+
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("token");
+
+    navigate("/login");
+    return;
+  }
+
+  if (!loggedInUser) {
+
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("token");
+
+    navigate("/login");
+    return;
+  }
+
+  console.log("Logged in user:", loggedInUser);
+  console.log("JWT token:", token);
+
+  // Initially show stored user
+  setUser(loggedInUser);
+
+
+  // ==========================================
+  // FETCH TRANSACTIONS
+  // ==========================================
+
+  const fetchTransactions = async (
+    currentUser,
+    jwtToken
+  ) => {
+
+    try {
+
+      const response = await fetch(
+        "http://localhost:8082/transactions",
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json"
+          }
+        }
       );
 
-    const token =
-      localStorage.getItem("token");
+
+      // JWT expired
+      if (response.status === 401) {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("loggedInUser");
+
+        alert(
+          "Your session has expired. Please login again."
+        );
+
+        navigate("/login");
+
+        return;
+      }
 
 
-    // =====================================================
-    // CHECK LOGIN
-    // =====================================================
+      if (!response.ok) {
 
-    if (!loggedInUser || !token) {
+        throw new Error(
+          "Failed to fetch transactions"
+        );
 
-      localStorage.removeItem("loggedInUser");
-      localStorage.removeItem("token");
+      }
 
-      navigate("/login");
 
-      return;
+      const allTransactions =
+        await response.json();
+
+
+      // ==========================================
+      // FILTER CURRENT USER TRANSACTIONS
+      // ==========================================
+
+      const userTransactions =
+        allTransactions.filter(
+          (item) =>
+            item.senderAccount ===
+              currentUser.accountNumber ||
+
+            item.receiverAccount ===
+              currentUser.accountNumber
+        );
+
+
+      // ==========================================
+      // LATEST FIRST
+      // ==========================================
+
+      userTransactions.sort(
+        (a, b) =>
+          new Date(b.date) -
+          new Date(a.date)
+      );
+
+
+      // ==========================================
+      // SHOW LATEST 5
+      // ==========================================
+
+      setTransactions(
+        userTransactions.slice(0, 5)
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Transaction loading error:",
+        error
+      );
+
+      setTransactions([]);
+
+    } finally {
+
+      setLoadingTransactions(false);
+
     }
 
+  };
 
-    // =====================================================
-    // FETCH LATEST USER DATA
-    // =====================================================
 
-    const fetchUser = async () => {
+  // ==========================================
+  // FETCH LATEST USER FROM DATABASE
+  // ==========================================
 
-      try {
+  const fetchUser = async () => {
 
-        const response = await fetch(
-          `http://localhost:8082/users/${loggedInUser.id}`,
-          {
-            method: "GET",
+    try {
 
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
+      setLoadingUser(true);
+
+
+      const response = await fetch(
+        `http://localhost:8082/users/${loggedInUser.id}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-        );
-
-
-        // JWT expired / invalid
-
-        if (response.status === 401) {
-
-          localStorage.removeItem("token");
-          localStorage.removeItem("loggedInUser");
-
-          alert(
-            "Your session has expired. Please login again."
-          );
-
-          navigate("/login");
-
-          return;
         }
+      );
 
 
-        if (!response.ok) {
+      // ==========================================
+      // JWT EXPIRED
+      // ==========================================
 
-          throw new Error(
-            "Failed to fetch user"
-          );
+      if (response.status === 401) {
 
-        }
+        localStorage.removeItem("token");
+        localStorage.removeItem("loggedInUser");
 
-
-        const latestUser =
-          await response.json();
-
-
-        // Update React
-
-        setUser(latestUser);
-
-
-        // Update localStorage
-
-        localStorage.setItem(
-          "loggedInUser",
-          JSON.stringify(latestUser)
+        alert(
+          "Your session has expired. Please login again."
         );
 
+        navigate("/login");
 
-        // =================================================
-        // FETCH TRANSACTIONS
-        // =================================================
+        return;
+      }
 
-        await fetchTransactions(
-          latestUser,
-          token
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Failed to fetch user"
         );
-
-
-      } catch (error) {
-
-        console.error(
-          "User loading error:",
-          error
-        );
-
-
-        // Fallback
-
-        setUser(loggedInUser);
-
-
-        // Still try transactions
-
-        fetchTransactions(
-          loggedInUser,
-          token
-        );
-
-
-      } finally {
-
-        setLoadingUser(false);
 
       }
 
-    };
+
+      // ==========================================
+      // GET USER
+      // ==========================================
+
+      const latestUser =
+        await response.json();
+
+      console.log(
+        "Latest user from database:",
+        latestUser
+      );
 
 
-    // =====================================================
-    // FETCH TRANSACTIONS
-    // =====================================================
+      // ==========================================
+      // UPDATE REACT STATE
+      // ==========================================
 
-    const fetchTransactions = async (
-      currentUser,
-      jwtToken
-    ) => {
-
-      try {
-
-        const response = await fetch(
-          "http://localhost:8082/transactions",
-          {
-            method: "GET",
-
-            headers: {
-              "Authorization": `Bearer ${jwtToken}`,
-              "Content-Type": "application/json"
-            }
-          }
-        );
+      setUser(latestUser);
 
 
-        // JWT expired
+      // ==========================================
+      // UPDATE LOCAL STORAGE
+      // ==========================================
 
-        if (response.status === 401) {
-
-          localStorage.removeItem("token");
-          localStorage.removeItem("loggedInUser");
-
-          alert(
-            "Your session has expired. Please login again."
-          );
-
-          navigate("/login");
-
-          return;
-        }
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(latestUser)
+      );
 
 
-        if (!response.ok) {
+      // ==========================================
+      // FETCH TRANSACTIONS
+      // ==========================================
 
-          throw new Error(
-            "Failed to fetch transactions"
-          );
-
-        }
-
-
-        const allTransactions =
-          await response.json();
+      await fetchTransactions(
+        latestUser,
+        token
+      );
 
 
-        // =================================================
-        // FILTER CURRENT USER
-        // =================================================
+    } catch (error) {
 
-        const userTransactions =
-          allTransactions.filter(
-            (item) =>
-              item.senderAccount ===
-                currentUser.accountNumber ||
-
-              item.receiverAccount ===
-                currentUser.accountNumber
-          );
+      console.error(
+        "User loading error:",
+        error
+      );
 
 
-        // =================================================
-        // LATEST FIRST
-        // =================================================
-
-        userTransactions.sort(
-          (a, b) =>
-            new Date(b.date) -
-            new Date(a.date)
-        );
+      // Use stored user if API fails
+      setUser(loggedInUser);
 
 
-        // =================================================
-        // SHOW LATEST 5
-        // =================================================
-
-        setTransactions(
-          userTransactions.slice(0, 5)
-        );
+      // Still try transactions
+      await fetchTransactions(
+        loggedInUser,
+        token
+      );
 
 
-      } catch (error) {
+    } finally {
 
-        console.error(
-          "Transaction loading error:",
-          error
-        );
+      setLoadingUser(false);
 
-        setTransactions([]);
+    }
 
-      } finally {
-
-        setLoadingTransactions(false);
-
-      }
-
-    };
+  };
 
 
-    fetchUser();
+  // ==========================================
+  // START FETCHING
+  // ==========================================
 
-  }, [navigate]);
+  fetchUser();
 
+}, [navigate]);
 
   // =====================================================
   // LOADING USER
@@ -721,6 +765,7 @@ function Dashboard() {
 
 
     </div>
+    
 
   );
 

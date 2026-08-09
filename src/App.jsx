@@ -37,7 +37,9 @@ function Layout() {
     "/login",
     
      "/admin-login",
-  "/admin-dashboard"
+  "/admin-dashboard",
+  "/view-application",
+  "/application-status"
   ];
 
   const hideSidebarPages = [
@@ -47,7 +49,9 @@ function Layout() {
     "/success",
     "/login",
      "/admin-login",
-  "/admin-dashboard"
+  "/admin-dashboard",
+  "/view-application",
+  "/application-status"
   ];
 
   const hideLayoutPages = [
@@ -56,6 +60,7 @@ function Layout() {
   "/review",
   "/success",
   "/login"
+
 ];
  const showHeader = !hideHeaderPages.includes(location.pathname);
   const showSidebar = !hideSidebarPages.includes(location.pathname);

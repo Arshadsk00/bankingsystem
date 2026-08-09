@@ -75,7 +75,8 @@ function Transactions() {
       // JWT EXPIRED / INVALID
       // =========================
 
-      if (response.status === 401) {
+      if (response.status === 401 ||  response.status === 403) 
+        {
 
         localStorage.removeItem("token");
         localStorage.removeItem("loggedInUser");
@@ -133,11 +134,7 @@ function Transactions() {
           new Date(b.date) -
           new Date(a.date)
       );
-
-
-      setTransactions(
-        userTransactions
-      );
+    setTransactions(userTransactions);
 
     } catch (err) {
 
@@ -207,6 +204,136 @@ function Transactions() {
     );
 
   }
+  const downloadStatement = async () => {
+
+    const user =
+        JSON.parse(
+            localStorage.getItem("loggedInUser")
+        );
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!user || !token) {
+        navigate("/login");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `http://localhost:8082/transactions/statement/${user.accountNumber}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to download statement"
+            );
+        }
+
+        const blob =
+            await response.blob();
+
+        const url =
+            window.URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            "SAFE-Bank-Statement.pdf";
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Unable to download statement."
+        );
+    }
+};
+
+
+
+
+const handleStatement = async () => {
+  try {
+    const user = JSON.parse(
+      localStorage.getItem("loggedInUser")
+    );
+
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      navigate("/login");
+      return;
+    }
+
+    const response = await fetch(
+      `http://localhost:8082/transactions/statement/${user.accountNumber}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to generate statement");
+    }
+
+    // Get PDF
+    const blob = await response.blob();
+
+    // Download PDF
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "SAFE-Bank-Statement.pdf";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+
+    alert(
+      `Statement downloaded and sent to ${user.email}`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Statement error:",
+      error
+    );
+
+    alert(
+      "Unable to generate statement."
+    );
+  }
+};
 
 
   // =========================
@@ -243,6 +370,23 @@ function Transactions() {
           <FiRefreshCw />
 
         </button>
+
+    
+
+    {/* STATEMENT BUTTON */}
+    <button
+      className="statement-btn"
+      onClick={handleStatement}
+      title="Download & Email Statement"
+    >
+      📄 Download Statement
+    </button>
+        {/* <button
+    className="download-btn"
+    onClick={downloadStatement}
+>
+    📄 Download Statement
+</button> */}
 
       </div>
 
@@ -338,6 +482,7 @@ function Transactions() {
                       }
 
                     </div>
+        
 
 
                     {/* DETAILS */}
@@ -438,6 +583,7 @@ function Transactions() {
                     ).toLocaleString("en-IN")}
 
                   </div>
+                  
 
                 </div>
 
@@ -446,6 +592,7 @@ function Transactions() {
             })}
 
           </div>
+          
 
         )}
 

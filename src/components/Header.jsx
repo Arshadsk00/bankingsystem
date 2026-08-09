@@ -1,43 +1,105 @@
-
-import { Navigate, useNavigate } from "react-router-dom";
 import {
   FiBell,
   FiSearch,
   FiLogOut,
   FiHelpCircle
 } from "react-icons/fi";
+
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import "./Header.css";
 
 function Header() {
+
+  const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
 
-useEffect(() => {
+  // ==========================================
+  // LOAD LOGGED-IN USER
+  // ==========================================
 
-  const loggedInUser =
-    JSON.parse(localStorage.getItem("loggedInUser"));
+  useEffect(() => {
 
-  if (loggedInUser) {
-    setUser(loggedInUser);
-  }
+    const storedUser =
+      localStorage.getItem("loggedInUser");
 
-}, []);
+    if (
+      !storedUser ||
+      storedUser === "undefined" ||
+      storedUser === "null"
+    ) {
+      setUser(null);
+      return;
+    }
 
-  const today = new Date().toLocaleDateString("en-IN",{
-    day:"2-digit",
-    month:"short",
-    year:"numeric"
-  });
-  const navigate=useNavigate();
+    try {
 
-   
+      const loggedUser =
+        JSON.parse(storedUser);
+
+      setUser(loggedUser);
+
+    } catch (error) {
+
+      console.error(
+        "Invalid loggedInUser:",
+        error
+      );
+
+      localStorage.removeItem(
+        "loggedInUser"
+      );
+
+      setUser(null);
+    }
+
+  }, []);
+
+
+  // ==========================================
+  // DATE
+  // ==========================================
+
+  const today =
+    new Date().toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+    );
+
+
+  // ==========================================
+  // LOGOUT
+  // ==========================================
+
+  const logout = () => {
+
+    localStorage.removeItem(
+      "loggedInUser"
+    );
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    navigate("/login");
+  };
+
+
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
 
     <header className="header">
 
-      {/* Left */}
+      {/* LEFT */}
 
       <div className="header-left">
 
@@ -47,19 +109,26 @@ useEffect(() => {
 
         <div className="bank-name">
 
-          <h2>SAFE BANK</h2>
+          <h2>
+            SAFE BANK
+          </h2>
 
-          <p>Secure Digital Banking</p>
+          <p>
+            Secure Digital Banking
+          </p>
 
         </div>
 
       </div>
 
-      {/* Search */}
+
+      {/* SEARCH */}
 
       <div className="search-box">
 
-        <FiSearch className="search-icon"/>
+        <FiSearch
+          className="search-icon"
+        />
 
         <input
           type="text"
@@ -68,19 +137,24 @@ useEffect(() => {
 
       </div>
 
-      {/* Right */}
+
+      {/* RIGHT */}
 
       <div className="header-right">
 
         <span className="date">
-
           {today}
-
         </span>
 
-        <button className="icon-btn">
 
-          <FiBell/>
+        {/* NOTIFICATION */}
+
+        <button
+          className="icon-btn"
+          type="button"
+        >
+
+          <FiBell />
 
           <span className="badge">
             2
@@ -88,47 +162,49 @@ useEffect(() => {
 
         </button>
 
-        <button className="icon-btn">
 
-          <FiHelpCircle/>
+        {/* HELP */}
+
+        <button
+          className="icon-btn"
+          type="button"
+        >
+
+          <FiHelpCircle />
 
         </button>
 
-        <div className="profile">
-         
-<div className="avatar-circle">
-{
-user?.fullName
-? user.fullName
-    .split(" ")
-    .map(word => word[0])
-    .join("")
-    .substring(0,2)
-    .toUpperCase()
-: "U"
-}
-</div>
 
-          {/* <img
-            src="https://i.pravatar.cc/150?img=12"
-            alt=""
-          /> */}
+        {/* PROFILE */}
+
+        <div className="profile">
 
           <div>
-            <h4>{user?.fullName || "Customer"}</h4>
 
-          <span>{user?.accountType || "SAFE BANK Customer"}</span>
+            <h4>
+              {user?.fullName ||
+                "Customer"}
+            </h4>
 
-            
+            <span>
+              {user?.accountType ||
+                "SAFE BANK Customer"}
+            </span>
 
           </div>
 
         </div>
 
-        <button className="logout"
-        onClick={()=>navigate("/login")}>
 
-          <FiLogOut/>
+        {/* LOGOUT */}
+
+        <button
+          className="logout"
+          onClick={logout}
+          type="button"
+        >
+
+          <FiLogOut />
 
         </button>
 
@@ -137,7 +213,6 @@ user?.fullName
     </header>
 
   );
-
 }
 
 export default Header;

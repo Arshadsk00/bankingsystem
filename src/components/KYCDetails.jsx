@@ -35,9 +35,9 @@ function KYCDetails({ formData, setFormData }) {
 
           <input
             type="text"
-            name="aadhaar"
-            placeholder="Enter 12-digit Aadhaar"
-            value={formData.aadhaar}
+            name="aadhar"
+            placeholder="Enter 12-digit Aadhar"
+            value={formData.aadhar}
             maxLength={12}
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, "");
@@ -45,7 +45,7 @@ function KYCDetails({ formData, setFormData }) {
               if (value.length <= 12) {
                 setFormData({
                   ...formData,
-                  aadhaar: value,
+                  aadhar: value,
                 });
               }
             }}
