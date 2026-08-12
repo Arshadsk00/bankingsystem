@@ -8,7 +8,7 @@ function ChatBot() {
  const [loading,setLoading]=useState(false);
 
  const handleSend = async () => {
-  if (!message.trim()) return;
+  if (!message.trim() || loading) return;
 
   const userMessage = message;
 
@@ -24,18 +24,38 @@ function ChatBot() {
   // Clear input
   setMessage("");
 
-  // Ask AI
-  const result = await askAI(userMessage);
+  // Show typing/loading
+  setLoading(true);
 
-  // Show AI reply
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "assistant",
-      text: result,
-    },
-  ]);
+  try {
+    // Ask AI
+    const result = await askAI(userMessage);
+
+    // Show AI reply
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        text: result,
+      },
+    ]);
+  } catch (error) {
+    console.error("AI Error:", error);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        text: "Sorry, I'm unable to respond right now. Please try again.",
+      },
+    ]);
+  } finally {
+    // Stop typing/loading
+    setLoading(false);
+  }
 };
+
+ 
 
   
 
@@ -106,31 +126,44 @@ Profile
 </button>
 
 </div>
+<div className="chat-body">
 
-          <div className="chat-body">
-            {messages.map((msg, index) => (
+  {messages.map((msg, index) => (
+    <div
+      key={index}
+      className={`chat-message ${msg.role}`}
+    >
+      {msg.text}
+    </div>
+  ))}
 
-  <div
-    key={index}
-    className={
-      msg.role === "user"
-        ? "user-message"
-        : "ai-message"
-    }
-  >
-    {msg.text}
-  </div>
+  {/* AI TYPING INDICATOR */}
+  {loading && (
+    <div className="chat-message assistant typing-message">
 
-))}
-{loading && (
-<div className="typing">
-<span></span>
-<span></span>
-<span></span>
+      <div className="typing-avatar">
+        🤖
+      </div>
+
+      <div className="typing-content">
+
+        <span>Typing</span>
+
+{/* SAFE BANK AI is typing */}
+        <div className="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+      </div>
+
+    </div>
+  )}
+
 </div>
-)}
-           
-          </div>
+
+          
 
           <div className="chat-footer">
 
@@ -141,7 +174,8 @@ Profile
               onChange={(e) => setMessage(e.target.value)}
             />
 
-            <button onClick={handleSend}>
+            <button 
+            type="submit" onClick={handleSend}>
               ➤
             </button>
 

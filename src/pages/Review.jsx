@@ -457,7 +457,7 @@ function Review() {
           className="submit-btn"
           onClick={handleSubmit}
         >
-          ✔ Confirm & Submit
+          ✔ Submit
         </button>
 
       </div>

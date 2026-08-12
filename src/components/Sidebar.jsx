@@ -19,9 +19,11 @@ import {
 } from "react-icons/fi";
 
 import "../css/Sidebar.css";
+import { useTranslation } from "react-i18next";
 
 
 function Sidebar() {
+    const {t} = useTranslation();
 
   const navigate = useNavigate();
 
@@ -105,6 +107,21 @@ function Sidebar() {
 
     navigate("/login");
   };
+
+  const getInitials = (name) => {
+  if (!name) return "C";
+
+  const parts = name.trim().split(/\s+/);
+
+  if (parts.length >= 2) {
+    return (
+      parts[0].charAt(0) +
+      parts[1].charAt(0)
+    ).toUpperCase();
+  }
+
+  return parts[0].charAt(0).toUpperCase();
+};
 
 
   // ==========================================
@@ -195,7 +212,8 @@ function Sidebar() {
             <FiHome />
 
             <span>
-              Dashboard
+              {t("Dashboard")}
+              
             </span>
 
           </NavLink>
@@ -210,7 +228,8 @@ function Sidebar() {
             <FiUserPlus />
 
             <span>
-              Create Account
+              {t("Create Account")}
+              
             </span>
 
           </NavLink>
@@ -225,7 +244,8 @@ function Sidebar() {
             <FiClipboard />
 
             <span>
-              Application Status
+              {t("Application Status")}
+              
             </span>
 
           </NavLink>
@@ -292,44 +312,50 @@ function Sidebar() {
 
         <div className="sidebar-bottom">
 
+    <div className="user-card">
 
-          {/* USER CARD */}
+        <div className="profile-avatar">
+            {user?.fullName
+                ? user.fullName
+                    .split(" ")
+                    .map(name => name.charAt(0))
+                    .join("")
+                    .slice(0, 2)
+                : "C"
+            }
+        </div>
 
-          <div className="user-card">
+        <div className="user-card-details">
 
-            <div>
+            <h3>
+                {user?.fullName || "Customer"}
+            </h3>
 
-              <h3>
-                {user?.fullName ||
-                  "Customer"}
-              </h3>
-
-              <p>
-                {user?.accountType ||
-                  "SAFE BANK Customer"}
-              </p>
-
-            </div>
-
-          </div>
-
-
-          {/* LOGOUT */}
-
-          <button
-            className="logout-btn"
-            onClick={logout}
-          >
-
-            <FiLogOut />
-
-            <span>
-              Logout
-            </span>
-
-          </button>
+            <p>
+                {user?.accountType || "SAFE BANK Customer"}
+            </p>
 
         </div>
+
+    </div>
+
+
+    <button
+        className="logout-btn"
+        onClick={logout}
+    >
+
+        <FiLogOut />
+
+        <span>
+            Logout
+        </span>
+
+    </button>
+
+</div>
+
+       
 
       </aside>
 

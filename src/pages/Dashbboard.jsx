@@ -8,8 +8,10 @@ import {
   FiEyeOff,
   FiBell
 } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 function Dashboard() {
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -20,7 +22,21 @@ function Dashboard() {
 
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
 
+
+
+
+
+  const maskAccountNumber = (accountNumber) => {
+  if (!accountNumber) {
+    return "XXXX XXXX";
+  }
+
+  const account = String(accountNumber);
+
+  return `XXXX XXXX ${account.slice(-4)}`;
+};
 
   // =====================================================
   // LOAD USER + TRANSACTIONS
@@ -364,7 +380,7 @@ function Dashboard() {
         <div>
 
           <p className="greeting">
-            Good Morning,
+           {t("Good Morning")}
           </p>
 
           <h2>
@@ -374,14 +390,7 @@ function Dashboard() {
         </div>
 
 
-        <button
-          className="notification-btn"
-        >
-
-          <FiBell />
-
-        </button>
-
+       
       </div>
 
 
@@ -396,7 +405,7 @@ function Dashboard() {
           <div>
 
             <p>
-              Available Balance
+              {t("Availabe Balance")}
             </p>
 
             <h1>
@@ -433,55 +442,59 @@ function Dashboard() {
 
           </button>
 
-        </div>
+        </div><br></br>
 
 
         {/* =================================================
             ACCOUNT DETAILS
         ================================================= */}
+        {/* <div className="account-number-box"> */}
+        <div className="account-number-box">
 
-        <div className="balance-footer">
+  <span>
+    {t("Account Number")}
+  </span>
 
+  <div className="account-number-row">
 
-          <div>
+    <h3>
+      {user.accountNumber
+        ? showAccountNumber
+          ? String(user.accountNumber)
+          : `XXXX XXXX ${String(user.accountNumber).slice(-4)}`
+        : "XXXX XXXX"
+      }
+    </h3>
 
-            <span>
-              Account
-            </span>
+    <button
+      type="button"
+      className="account-eye-btn"
+      onClick={() =>
+        setShowAccountNumber(!showAccountNumber)
+      }
+      aria-label={
+        showAccountNumber
+          ? "Hide account number"
+          : "Show account number"
+      }
+    >
 
-            <h3>
-              {user.accountType}
-            </h3>
+      {showAccountNumber ? (
+        <FiEyeOff />
+      ) : (
+        <FiEye />
+      )}
 
-          </div>
+    </button>
 
+  </div>
 
-          <div>
+</div>
+ </div>
 
-            <span>
-              Account Number
-            </span>
+     
 
-            <h3>
-
-              {user.accountNumber
-
-                ? `XXXX XXXX ${String(
-                    user.accountNumber
-                  ).slice(-4)}`
-
-                : "XXXX XXXX"
-
-              }
-
-            </h3>
-
-          </div>
-
-
-        </div>
-
-      </div>
+      
 
 
       {/* =================================================
@@ -553,6 +566,7 @@ function Dashboard() {
             </span>
 
             <p>
+              {t("Transactions")}
               Transactions
             </p>
 
@@ -697,18 +711,14 @@ function Dashboard() {
 
                   </h3>
 
-
                   <p>
+  {isCredit
+    ? `From ${maskAccountNumber(item.senderAccount)}`
+    : `To ${maskAccountNumber(item.receiverAccount)}`
+  }
+</p>
 
-                    {isCredit
-
-                      ? `From ${item.senderAccount}`
-
-                      : `To ${item.receiverAccount}`
-
-                    }
-
-                  </p>
+               
 
 
                   {item.remarks && (

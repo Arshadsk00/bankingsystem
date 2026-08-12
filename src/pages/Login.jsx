@@ -338,7 +338,7 @@ function Login() {
           {!showOtp ? (
 
             <button
-              type="button"
+              type="submit"
               className="login-btn"
               onClick={sendOtp}
               disabled={loading}
@@ -353,7 +353,7 @@ function Login() {
           ) : (
 
             <button
-              type="button"
+              type="submit"
               className="login-btn"
               onClick={verifyOtp}
               disabled={loading}

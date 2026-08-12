@@ -1,3 +1,10 @@
+/* .transactions-page{
+    max-width:900px;
+    
+    padding:20px;
+    margin-top: 60px;
+    margin-left: 250px;
+} */
 /* =====================================================
    TRANSACTIONS PAGE
 ===================================================== */
@@ -10,6 +17,10 @@
     box-sizing: border-box;
 }
 
+/* .transactions-header{
+    text-align:center;
+    margin-bottom:30px;
+} */
 /* =====================================================
    HEADER
 ===================================================== */
@@ -19,17 +30,35 @@
     margin-bottom: 30px;
 }
 
+/* .transactions-header h1{
+    color:#1565C0;
+    font-size:34px;
+} */
 .transactions-header h1 {
     color: #1565c0;
     font-size: 34px;
     margin: 0 0 5px;
 }
 
+
 .transactions-header p {
     color: #666;
     margin: 0;
     font-size: 16px;
 }
+button{
+    
+   padding: 5px;
+    
+    background-color:lavender;
+}
+.statement-btn{
+    
+    margin-left: 10px;
+    
+
+}
+
 
 /* =====================================================
    TRANSACTION CARD
@@ -39,19 +68,29 @@
     width: 100%;
     min-height: 125px;
 
+    background:white;
+    padding:20px;
+    margin-bottom:18px;
     display: flex;
     align-items: center;
     gap: 20px;
 
+    border-radius:18px;
     background: white;
 
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
     padding: 22px 25px;
     margin-bottom: 18px;
 
-    border-radius: 18px;
+    transition:.3s;
 
+    border-radius: 18px;
+}
+
+.transaction-card:hover{
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 
+    transform:translateY(-5px);
     box-sizing: border-box;
 
     transition: 0.25s ease;
@@ -62,10 +101,15 @@
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
+.left{
 /* =====================================================
    LEFT SIDE
 ===================================================== */
 
+    display:flex;
+    gap:15px;
+    align-items:center;
+}
 .transaction-card .left {
     flex: 1;
     min-width: 0;
@@ -74,6 +118,7 @@
     align-items: center;
     gap: 18px;
 }
+
 
 /* =====================================================
    ICON
@@ -92,15 +137,22 @@
 
     flex: 0 0 55px !important;
 
+    width:55px;
+    height:55px;
     border-radius: 50% !important;
 
+    border-radius:50%;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 
+    display:flex;
+    justify-content:center;
+    align-items:center;
     padding: 0 !important;
     margin: 0 !important;
 
+    font-size:28px;
     box-sizing: border-box !important;
 
     font-size: 25px;
@@ -108,7 +160,11 @@
     line-height: 1;
 }
 
+.credit{
 
+    background:#E8F5E9;
+    color:#2E7D32;
+}
 /* RECEIVED */
 .transaction-card .icon.credit {
     background: #e8f5e9 !important;
@@ -122,7 +178,11 @@
     color: #d32f2f !important;
 }
 
+.debit{
 
+    background:#FDECEA;
+    color:#D32F2F;
+}
 /* Icon itself */
 .transaction-card .icon svg {
     width: 25px;
@@ -136,8 +196,11 @@
     width: 55px;
     height: 55px;
 
+.amount{
     border-radius: 50%;
 
+    font-size:22px;
+    font-weight:bold;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,6 +208,7 @@
     font-size: 27px;
 }
 
+.credit-text{
 /* RECEIVED */
 
 .transaction-card .credit {
@@ -159,6 +223,7 @@
     color: #d32f2f;
 } */
 
+
 /* =====================================================
    TRANSACTION INFORMATION
 ===================================================== */
@@ -168,11 +233,13 @@
     flex: 1;
 }
 
+
 .transaction-card h2,
 .transaction-card h3 {
     color: #0d3b70;
     margin: 0 0 5px;
 
+    color:#D32F2F;
     font-size: 21px;
     font-weight: 700;
 
@@ -180,15 +247,20 @@
     overflow-wrap: anywhere;
 }
 
+.empty{
 .transaction-card p {
     margin: 3px 0;
 
+    text-align:center;
     color: #777;
 
+    background:white;
     font-size: 14px;
     line-height: 1.45;
 
+    padding:40px;
     overflow-wrap: anywhere;
+}
 }
 
 /* =====================================================
@@ -198,8 +270,10 @@
 .transaction-card .amount {
     flex: 0 0 auto;
 
+    border-radius:18px;
     min-width: 90px;
 
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
     text-align: right;
 
     font-size: 22px;
@@ -208,12 +282,14 @@
     white-space: nowrap;
 }
 
+@media(max-width:768px){
 .credit-text {
     color: #2e7d32;
 }
 
 .debit-text {
     color: #d32f2f;
+}
 }
 
 /* =====================================================
@@ -223,18 +299,25 @@
 .empty {
     width: 100%;
 
+
+.transaction-card{
     text-align: center;
 
+flex-direction:column;
     background: white;
 
+align-items:flex-start;
     padding: 40px 20px;
 
+gap:15px;
     border-radius: 18px;
 
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 
     box-sizing: border-box;
 }
+}
+
 
 /* =====================================================
    TABLET
@@ -264,6 +347,7 @@
         width: 100%;
         max-width: 100%;
 
+font-size:18px;
         /* VERY IMPORTANT */
         margin-left: 0;
         margin-right: 0;
@@ -349,6 +433,7 @@
 
         margin-top: 10px;
     }
+}
 }
 
 

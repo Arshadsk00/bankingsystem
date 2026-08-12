@@ -23,6 +23,7 @@ import Transactions from './pages/Transactions'
 import Contact from './pages/Contact'
 import Settings from './pages/Settings'
 import AdminLogin from './pages/AdminLogin'
+import i18n from './i18n'
 
 
 function Layout() {
@@ -108,7 +109,12 @@ function App() {
     const theme =
       localStorage.getItem("theme") || "light";
 
-    document.body.className = theme;
+    document.body.classList.add(
+      theme === "dark"
+        ? "dark-theme"
+        : "light-theme"
+    );
+
 
   }, []);
    return (

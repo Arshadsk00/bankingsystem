@@ -176,24 +176,43 @@ function Header() {
 
 
         {/* PROFILE */}
+        {/* =================================================
+    HEADER PROFILE
+================================================= */}
 
-        <div className="profile">
+<div className="header-profile">
 
-          <div>
+    {/* AVATAR */}
+    <div className="header-avatar">
+        {user?.fullName
+            ? user.fullName
+                .split(" ")
+                .map(name => name.charAt(0))
+                .join("")
+                .slice(0, 2)
+            : "C"
+        }
+    </div>
 
-            <h4>
-              {user?.fullName ||
-                "Customer"}
-            </h4>
 
-            <span>
-              {user?.accountType ||
-                "SAFE BANK Customer"}
-            </span>
+    {/* USER DETAILS */}
+    <div className="header-profile-details">
 
-          </div>
+        <h4>
+            {user?.fullName || "Customer"}
+        </h4>
 
-        </div>
+        <span>
+            {user?.accountType || "SAFE BANK Customer"}
+        </span>
+
+    </div>
+
+</div>
+
+     
+
+        
 
 
         {/* LOGOUT */}

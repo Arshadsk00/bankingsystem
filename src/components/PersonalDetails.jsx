@@ -26,8 +26,8 @@ function PersonalDetails({ formData, setFormData, errors }) {
   return (
     <div className="form-card">
 
-      <h2>Personal Details</h2>
-      <p className="subtitle">Enter your personal information</p>
+      <h2>Personal Details</h2><br></br>
+      {/* <p className="subtitle">Enter your personal information</p> */}
 
       <div className="form-grid">
 

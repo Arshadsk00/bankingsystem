@@ -14,6 +14,7 @@ FiMessageCircle
 } from "react-icons/fi";
 
 import "../css/Settings.css";
+import { useTranslation } from "react-i18next";
 
 function Settings() {
 
@@ -58,6 +59,21 @@ localStorage.removeItem("loggedInUser");
 
 navigate("/login");
 
+};
+const { t, i18n } = useTranslation();
+const [language, setLanguage] = useState(
+  localStorage.getItem("language") || "en"
+);
+const changeLanguage = (newLanguage) => {
+
+  setLanguage(newLanguage);
+
+  localStorage.setItem(
+    "language",
+    newLanguage
+  );
+
+  i18n.changeLanguage(newLanguage);
 };
 
 return(
@@ -165,13 +181,35 @@ onClick={()=>navigate("/profile")}
 
 <div>
 
-<h3>Language</h3>
+<h3>{t("language")}</h3>
 
-<p>English</p>
-
-</div>
+<p>{t("languageDescription")}</p>
 
 </div>
+
+</div>
+ <select
+    
+    value={language}
+    onChange={(e) =>
+      changeLanguage(e.target.value)
+    }
+    className="language-select"
+  >
+
+    <option value="en">
+      🇬🇧 {t("english")}
+    </option>
+
+    <option value="te">
+      🇮🇳 {t("telugu")}
+    </option>
+
+    <option value="hi">
+      🇮🇳 {t("hindi")}
+    </option>
+
+  </select>
 
 <FiChevronRight/>
 
@@ -206,7 +244,7 @@ onClick={()=>navigate("/contact")}
 
 <FiMessageCircle className="icon"/>
 
-<div>
+<div onClick={()=>navigate("/")}>
 
 <h3>SAFE BANK AI</h3>
 

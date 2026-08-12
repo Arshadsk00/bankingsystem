@@ -17,6 +17,46 @@
     font-size:15px;
     color:#777;
 }
+.account-number-box {
+  display: flex;
+  flex-direction: column;
+  align-items:flex-start;
+}
+
+.account-number-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.account-number-row h3 {
+  margin: 5px 0 0;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.account-eye-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  color: #000;
+  font-size: 20px;
+
+  transition: 0.2s ease;
+}
+
+.account-eye-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
 
 
 .dashboard-header h2{

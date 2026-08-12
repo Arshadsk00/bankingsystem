@@ -57,6 +57,13 @@
     font-size: 17px;
     backdrop-filter: blur(8px);
 }
+.left-panel button{
+    padding: 10px;
+    border: 20px;
+    
+    background-color:burlywood;
+    
+}
 
 
 /* =====================================================

@@ -107,8 +107,8 @@ function ViewApplication() {
 
             <div className="info-item">
               <FiShield />
-              <span>Aadhaar</span>
-              <strong>{app.aadhaar}</strong>
+              <span>Aadhar</span>
+              <strong>{app.aadhar}</strong>
             </div>
 
             <div className="info-item">

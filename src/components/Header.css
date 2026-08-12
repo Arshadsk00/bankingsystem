@@ -220,7 +220,86 @@ border-radius:20px;
     font-size:12px;
     color:#777;
 }
+/* =================================================
+   HEADER PROFILE
+================================================= */
 
+.header-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-width: 0;
+}
+
+
+/* HEADER AVATAR */
+
+.header-avatar {
+    width: 44px;
+    height: 44px;
+
+    min-width: 44px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        #1565c0,
+        #42a5f5
+    );
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    flex-shrink: 0;
+
+    box-shadow:
+        0 4px 10px rgba(21, 101, 192, 0.25);
+}
+
+
+/* HEADER DETAILS */
+
+.header-profile-details {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.header-profile-details h4 {
+    margin: 0;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    color: #123b6d;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.header-profile-details span {
+    margin-top: 2px;
+
+    font-size: 11px;
+
+    color: #777;
+
+    white-space: nowrap;
+}
 
 /* LOGOUT */
 

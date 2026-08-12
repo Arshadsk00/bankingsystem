@@ -535,6 +535,15 @@ function Profile() {
               />
 
             </div>
+            <div className="profile-field">
+  <label>IFSC Code</label>
+
+  <input
+    type="text"
+    value={user.ifscCode || ""}
+    disabled
+  />
+</div>
 
 
             {/* MOBILE */}
