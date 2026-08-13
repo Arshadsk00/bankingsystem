@@ -567,7 +567,7 @@ function Dashboard() {
 
             <p>
               {t("Transactions")}
-              Transactions
+              
             </p>
 
           </button>

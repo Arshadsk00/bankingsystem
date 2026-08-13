@@ -85,7 +85,7 @@ const handleChange = (e) => {
           <FiPhone className="contact-icon"/>
 
           <h3>Customer Care</h3>
-            <a href="+919988776655"> contact us</a>
+            <a href="+919988776655"> </a>
           <p>1800-123-4567</p>
 
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { askAI } from "../services/openrouter";
 import "../css/ChatBot.css";
 
@@ -54,6 +54,31 @@ function ChatBot() {
     setLoading(false);
   }
 };
+ // ==========================================
+  // OPEN CHAT FROM SETTINGS
+  // ==========================================
+
+  useEffect(() => {
+
+    const openChat = () => {
+      setOpen(true);
+    };
+
+    window.addEventListener(
+      "open-safe-bank-ai",
+      openChat
+    );
+
+    return () => {
+
+      window.removeEventListener(
+        "open-safe-bank-ai",
+        openChat
+      );
+
+    };
+
+  }, []);
 
  
 

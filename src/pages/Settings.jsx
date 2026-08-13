@@ -238,19 +238,21 @@ onClick={()=>navigate("/contact")}
 
 </div>
 
-<div className="setting-card">
+<div className="setting-card" onClick={()=>
+  window.dispatchEvent(new Event("open-safe-bank-ai"))
+}>
 
 <div className="left">
 
 <FiMessageCircle className="icon"/>
 
-<div onClick={()=>navigate("/")}>
+
 
 <h3>SAFE BANK AI</h3>
 
 <p>24×7 Banking Assistant</p>
 
-</div>
+
 
 </div>
 
